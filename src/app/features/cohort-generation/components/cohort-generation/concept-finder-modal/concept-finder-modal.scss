@@ -1,0 +1,17 @@
+.form-container {
+  margin: 1em 0;
+}
+
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.mat-mdc-dialog-surface {
+  max-height: 100vh !important;
+}
+
+.mat-mdc-dialog-content {
+  max-height: unset !important;
+}

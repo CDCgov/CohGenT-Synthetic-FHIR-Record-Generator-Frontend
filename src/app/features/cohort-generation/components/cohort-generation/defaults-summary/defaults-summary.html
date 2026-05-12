@@ -1,0 +1,31 @@
+<div [ngClass]="reviewOnly() ? '': 'summary-wrapper'">
+  @if (!reviewOnly()) {
+    <div class="header-section">
+      <div>
+          <h2 class="summary-title">{{ title() }}</h2>
+      </div>
+      <div class="header-actions">
+         <button
+          matButton="filled"
+          class="secondary-btn"
+          (click)="handleCustomizeClick()"
+          >
+          <mat-icon>tune</mat-icon> Customize Patient Demographics
+          </button>
+      </div>
+    </div>
+  }
+
+
+  <div class="summary-grid" [class.compact-grid]="reviewOnly()">
+    @for (opt of options(); track opt.ruleId; let i = $index) {
+      <div class="summary-item"
+           [class.compact-item]="reviewOnly()">
+        <app-custom-item-review
+          [option]="opt"
+          [compact]="reviewOnly()">
+        </app-custom-item-review>
+      </div>
+    }
+  </div>
+</div>

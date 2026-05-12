@@ -1,0 +1,76 @@
+<div class="panel gray-bg margin-bottom-md">
+  <div class="panel-header d-flex align-items-center">
+    <div class="d-flex align-items-center">
+      <div class="tag is-white border">
+        Clinical Data Set {{ index() + 1 }}
+      </div>
+    </div>
+
+    @if (editEnabled()) {
+      <button matIconButton aria-label="edit clinical data set" (click)="onEditEventSet()">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button matIconButton aria-label="Delete clinical data set" (click)="onDeleteEventSet()">
+        <mat-icon>delete</mat-icon>
+      </button>
+    }
+  </div>
+
+  <div class="tag margin-bottom-sm">
+    <div>
+      Onset(+) {{ eventSetDataView().onset.onsetPlus }} {{ eventSetDataView().onset.units }}
+      @if (eventSetDataView().onset.repeat) {
+        Repeat Every
+        {{ eventSetDataView().onset.repeatEvery }} {{ eventSetDataView().onset.repeatEveryUnits }}
+      }
+    </div>
+    @if(eventSetDataView().diagnosticPanel){
+      <div>
+        {{ eventSetDataView().diagnosticPanel.display }} Code: {{ eventSetDataView().diagnosticPanel.code }} System: {{ eventSetDataView().diagnosticPanel | systemStr }}
+      </div>
+    }
+  </div>
+
+  <table mat-table [dataSource]="eventSetDataView().lineItems" class="mat-elevation-z8">
+
+    <!-- Type Column -->
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef> Type</th>
+      <td mat-cell *matCellDef="let row"> {{ row.type }}</td>
+    </ng-container>
+
+    <!-- System Column -->
+    <ng-container matColumnDef="system">
+      <th mat-header-cell *matHeaderCellDef> System</th>
+      <td mat-cell *matCellDef="let row"> {{ row | systemStr }}</td>
+    </ng-container>
+
+    <!-- Code Column -->
+    <ng-container matColumnDef="code">
+      <th mat-header-cell *matHeaderCellDef> Code</th>
+      <td mat-cell *matCellDef="let row"> {{ row.code }}</td>
+    </ng-container>
+
+    <!-- Display Column -->
+    <ng-container matColumnDef="display">
+      <th mat-header-cell *matHeaderCellDef> Display</th>
+      <td mat-cell *matCellDef="let row"> {{ row.display }}</td>
+    </ng-container>
+
+    <!-- Value Type Column -->
+    <ng-container matColumnDef="valueType">
+      <th mat-header-cell *matHeaderCellDef> Value Type</th>
+      <td mat-cell *matCellDef="let row"> {{ row.valueType }}</td>
+    </ng-container>
+
+    <!-- Value Column -->
+    <ng-container matColumnDef="value">
+      <th mat-header-cell *matHeaderCellDef> Value</th>
+      <td mat-cell *matCellDef="let row"> {{ row.value }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+</div>

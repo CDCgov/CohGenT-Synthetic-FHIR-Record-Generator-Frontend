@@ -1,0 +1,15 @@
+<div #medicationsContainer>
+  @for (medicationFg of medicationFromArray?.controls; track medicationFg; let i = $index) {
+    <app-medication-form
+      [medicationForm]="$any(medicationFg)"
+      [index]="i"
+      (delete)="onDeleteMedication(i)"
+    />
+  }
+
+  <div class="d-flex justify-content-center mt-4">
+    <button class="w-50 secondary-btn" matButton="filled" (click)="addMedication()">
+      <mat-icon>add</mat-icon> Add Medication
+    </button>
+  </div>
+</div>

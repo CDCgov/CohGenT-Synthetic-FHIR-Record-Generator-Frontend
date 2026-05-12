@@ -1,0 +1,124 @@
+<form [formGroup]="conceptFinderForm" (ngSubmit)="onSubmit()">
+  <div class="search-container">
+    <!-- Search Term Input -->
+    <mat-form-field appearance="outline" class="search-input">
+      <mat-label>Search Term</mat-label>
+      <input
+        matInput
+        formControlName="searchTerm"
+        placeholder="Enter search term"
+      />
+      @if (searchTermControl?.hasError('required') && (formSubmitted() || searchTermControl?.touched)) {
+        <mat-error>
+          Search term is required
+        </mat-error>
+      }
+      @if (searchTermControl?.hasError('minlength') && (formSubmitted() || searchTermControl?.touched)) {
+        <mat-error>
+          Search term must be at least 3 characters
+        </mat-error>
+      }
+      <mat-hint> {{ searchTermHint() }}</mat-hint>
+    </mat-form-field>
+
+    <!-- System Select -->
+    <mat-form-field appearance="outline" class="search-dropdown">
+      <mat-label>System</mat-label>
+      <mat-select formControlName="system">
+        <mat-option [value]="''">All Systems</mat-option>
+        @for (system of dropdownSystemList(); track system.uri) {
+          <mat-option [value]="system.uri">
+            {{ system.label }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Action Buttons -->
+    <button
+      matButton="outlined"
+      type="submit"
+      class="secondary-btn search-button"
+      [disabled]="isLoading()"
+    >
+      @if (isLoading()) {
+        <span>Searching...</span>
+      } @else {
+        <span>Search</span>
+      }
+    </button>
+  </div>
+</form>
+
+<!-- Results Section -->
+<div class="results-container">
+  <!-- No Results Message -->
+  @if (!isLoading() && hasSearched() && dataSource.data.length === 0) {
+    <div class="no-results">
+      <p>No concepts found matching your search criteria.</p>
+      <p>Try a different search term or select a different system.</p>
+    </div>
+  }
+  <!-- Results Table -->
+  @if (dataSource.data.length > 0) {
+    <div class="table-wrapper">
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource">
+          <!-- Code Column -->
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let concept">{{ concept.code }}</td>
+          </ng-container>
+
+          <!-- Display Column -->
+          <ng-container matColumnDef="display">
+            <th mat-header-cell *matHeaderCellDef>Display Name</th>
+            <td mat-cell *matCellDef="let concept">{{ concept.display }}</td>
+          </ng-container>
+
+          <!-- System Column -->
+          <ng-container matColumnDef="system">
+            <th mat-header-cell *matHeaderCellDef>System</th>
+            <td mat-cell *matCellDef="let concept">
+              <span class="system-badge">{{ concept.system }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Header Row -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+
+          <!-- Data Rows -->
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            (click)="onSelect(row)"
+            class="clickable-row compact-row"
+            [title]="'Click to select: ' + row.display"
+            [class.selected-table-row]="row.code === selectedConcept()?.code && row.display === selectedConcept()?.display && row.system === selectedConcept()?.system"
+          ></tr>
+        </table>
+      </div>
+
+      <!-- Paginator -->
+      <mat-paginator
+        [length]="totalRecords"
+        [pageSize]="pageSize"
+        [pageIndex]="pageIndex"
+        [pageSizeOptions]="[10, 25, 50]"
+        (page)="onPageChange($event)"
+        [disabled]="isLoading()"
+        showFirstLastButtons
+        class="paginator"
+      >
+      </mat-paginator>
+    </div>
+  }
+
+  <!-- Loading Indicator (Optional) -->
+  @if (isLoading()) {
+    <div class="loading-indicator">
+      <p>Loading results</p>
+    </div>
+  }
+</div>
+

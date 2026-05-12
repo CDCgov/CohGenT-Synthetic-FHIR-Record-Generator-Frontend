@@ -1,0 +1,30 @@
+<div class="dialog-title" mat-dialog-title >
+  {{ fromPreset ? "Select Condition" : "Concept Finder" }}
+</div>
+
+<mat-dialog-content>
+  @if (fromPreset) {
+    <app-concept-select
+      (onSelectConcept)="onSelectAndApplyConcept($event)"
+    ></app-concept-select>
+  } @else {
+    <app-concept-search
+      [systemList]="systemList"
+      [searchTermHint]="searchTermHint"
+      (onSelectConcept)="onSelectConcept($event)"
+      [selectedSystem]="selectedSystem">
+    </app-concept-search>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-footer">
+  <button matButton="outlined" (click)="onClose()">
+    Cancel
+  </button>
+  @if(!fromPreset){
+    <button matButton="filled" class="secondary-btn" (click)="onSelect()">
+      Select
+    </button>
+  }
+
+</mat-dialog-actions>

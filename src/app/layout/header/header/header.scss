@@ -1,0 +1,65 @@
+@use '@angular/material' as mat;
+
+.header{
+  height: 60px;
+}
+
+.logo {
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .logo-title{
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -.144px;
+  }
+  .logo-subtitle{
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: -.144px;
+    padding: 4px 12px;
+    margin-left: 4px;
+    border-left: 1px solid #ececec;  
+  }
+  svg {
+   width: 32px;
+  }
+  .logo-svg {
+    align-items: center;
+    margin-inline: auto;
+    display: flex;
+  }
+}
+
+.centered-vertically {
+  display: flex;
+  align-items: center;
+}
+
+.version-text{
+  font-size: 12px;
+  font-weight: 400;
+  cursor: default
+}
+
+
+
+.report-issue-btn {
+  @include mat.button-overrides((
+    outlined-label-text-color: #C92803,
+    outlined-outline-color: #C92803
+  ));
+
+  mat-icon {
+    color: #C92803;
+  }
+
+  &:hover {
+    @include mat.button-overrides((
+      outlined-label-text-color: #D53340,
+      outlined-outline-color: #D53340,
+    ));
+  }
+}

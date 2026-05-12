@@ -1,0 +1,45 @@
+.action-items{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0 16px 16px 16px;
+}
+.label-text {
+  font-weight: bold;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Spacing between rows */
+}
+
+.flex-row {
+  display: flex;
+  gap: 8px;
+  line-height: 1.6;
+}
+
+.label {
+  font-weight: bold;
+  min-width: 100px;
+}
+
+.data {
+  font-weight: normal;
+}
+
+.mat-mdc-table {
+   border: 1px solid grey;
+   border-radius: 2px;
+ }
+
+.mat-column-Sex {
+  border-right: 1px solid grey;
+  align-self: stretch;
+}
+
+.right-border{
+  border-right: 1px solid grey;
+  align-self: stretch;
+}

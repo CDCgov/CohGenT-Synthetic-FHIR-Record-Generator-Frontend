@@ -1,0 +1,77 @@
+<div class="sections">
+  <div class="top-row">
+    <div class="description-section">
+      <div class="margin-bottom-md">{{ UI_CONSTANTS.DESCRIPTION }}</div>
+      @for(str of UI_CONSTANTS.BULLETS; track str){
+        <div class="bullet-point">{{ str }}</div>
+      }
+      <div>{{ UI_CONSTANTS.PHI_LANGUAGE }}</div>
+    </div>
+    <div class="menu-section">
+      <div class="card-container">
+        <mat-card appearance="outlined">
+          <mat-card-content>
+            <div class="card-content">
+              <div class="w-full margin-bottom-md">
+                <button matButton="filled" (click)="onCreateCohort()" class="w-full secondary-btn">
+                  <mat-icon>add_box</mat-icon>
+                  New Cohort Configuration
+                </button>
+              </div>
+              <input
+                type="file" class="file-input" (click)="fileUpload.value"
+                accept="application/json"
+                (change)="onFileSelected($event)" #fileUpload>
+              <div class="w-full margin-bottom-md">
+                <button matButton="outlined" (click)="fileUpload.click();" class="w-full">
+                  <mat-icon>upload</mat-icon>
+                  Load Cohort Configuration
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+
+  <div class="samples-section">
+    <mat-accordion>
+      <mat-expansion-panel togglePosition="before">
+        <mat-expansion-panel-header>
+          <mat-panel-title class="centered-title"> View Samples </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <table mat-table [dataSource]="samples()">
+
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let sample">{{ sample.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef> Scenario </th>
+            <td mat-cell *matCellDef="let sample">{{ sample.data.selectedUseCase.title }} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let sample">
+              <button matButton="outlined" class="secondary-btn" type="button" (click)="onLoadUseCase(sample.data)">Load</button>
+            </td>
+          </ng-container>
+
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell no-records-returned-msg" [attr.colspan]="displayedColumns.length">
+              No Samples Available.
+            </td>
+          </tr>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        </table>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+</div>

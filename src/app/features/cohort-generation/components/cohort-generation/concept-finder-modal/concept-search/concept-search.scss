@@ -1,0 +1,102 @@
+.form-container {
+  margin: 1em 0;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+  background-color: #f5f5f5;
+}
+
+.selected-table-row {
+  background-color: #f5f5f5;
+}
+
+.search-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.search-button {
+  margin-top: 4px;
+}
+
+.compact-row {
+  height: 32px;
+}
+
+.mat-column-system {
+  width: 10%;
+  margin: 0 8px;
+  white-space: nowrap;
+}
+
+.results-container {
+  margin-top: 16px;
+}
+
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid lightgray;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.table-container {
+  max-height: 360px;
+  overflow-y: auto;
+
+  @media (min-height: 800px) {
+    max-height: 520px;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  .mat-mdc-header-row {
+    background-color: #f5f5f5;
+    height: 32px;
+  }
+
+  .mat-mdc-header-cell {
+    font-weight: 600;
+    color: #495057;
+    padding: 12px 16px;
+    background-color: #f5f5f5;
+  }
+  .mat-column-code {
+    white-space: nowrap;
+  }
+
+  .mat-column-system {
+    white-space: nowrap;
+  }
+}
+
+.loading-indicator p::after {
+  content: '...';
+  display: inline-block;
+  animation: ellipsis 1.5s infinite;
+}
+
+@keyframes ellipsis {
+  0% { content: '.'; }
+  33% { content: '..'; }
+  66% { content: '...'; }
+}
+
+.paginator {
+  border-top: 1px solid lightgray;
+}

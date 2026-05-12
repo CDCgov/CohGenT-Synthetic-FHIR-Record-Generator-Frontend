@@ -1,0 +1,41 @@
+<form [formGroup]="form()">
+  <div class=line-item [formGroupName]=option().ruleId>
+    <div class="form-heading">
+       <h2>{{ option().label }}</h2>
+      @if (option().tooltip) {
+        <mat-icon [matTooltip]="option().tooltip" class="margin-left-md tooltip-icon">info</mat-icon>
+      }
+      @for(tag of option().tags; track tag){
+        @if((tag | chipsStr); as chipValue) {
+          <div class="tag is-rounded form-tag"
+            [class]="chipValue.toLowerCase() === 'required' ? 'is-danger is-light' :
+                    chipValue.toLowerCase() === 'optional' ? 'is-white' :
+                    'is-light'">
+            {{ chipValue }}
+          </div>
+        }
+      }
+    </div>
+
+    <div class="description">{{ option().description }}</div>
+    <div class="controls">
+      <div class="form-group">
+        <label class="field-label" for="state">State</label>
+        <mat-form-field appearance="outline" class="margin-right-lg">
+          <input id="state" type="text" placeholder="Search for a state" aria-label="State" matInput formControlName="state" [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+            @for (option of filteredStates | async; track option) {
+              <mat-option [value]="option">{{option.name}}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+          <label class="field-label" for="city">City</label>
+          <mat-form-field appearance="outline">
+            <input type="text" matInput formControlName="city">
+          </mat-form-field>
+      </div>
+    </div>
+  </div>
+</form>

@@ -1,0 +1,18 @@
+// Ensure consistent spacing between concept form and delete button
+.d-flex {
+  display: flex;
+
+  .flex-grow-1 {
+    flex: 1 1 auto;
+    min-width: 0; // Prevents flex item from overflowing
+  }
+
+  .flex-shrink-0 {
+    flex: 0 0 auto;
+  }
+}
+
+// Gap utility for consistent spacing
+.gap-3 {
+  gap: 1rem;
+}

@@ -1,0 +1,21 @@
+.column-headers {
+  margin-bottom: 16px;
+
+  .value-header {
+    padding-left: 8px;
+    width: 212px;
+  }
+
+  .weight-header {
+    padding-left: 8px;
+    width: 120px;
+  }
+}
+
+.hidden {
+  display: none;
+}
+.lock-icon {
+  cursor: pointer;
+  color: var(--zinc-500);
+}

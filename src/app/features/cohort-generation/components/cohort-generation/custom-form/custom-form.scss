@@ -1,0 +1,58 @@
+.hidden {
+  display: none;
+}
+
+.line-item {
+   margin: 12px 0;
+    display: inline-flex;
+  > .notes {
+    font-size: smaller;
+   
+  }
+
+  > .muti-input-controls {
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  > .row-layout {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  > .column-layout {
+    flex-direction: column;
+    align-items: flex-start;
+    max-height: 25rem; //about how high 4 inputs are, but we can change this
+    align-content: flex-start;
+  }
+
+  > .controls {
+    display: flex;
+    margin-top: 16px;
+
+    > .slider {
+      flex-grow: 1;
+    }
+
+    > .distribution-inputs {
+      display: flex;
+    }
+
+    > .col {
+      flex-grow: 1;
+    }
+  }
+}
+
+.slider-width {
+  width: 28rem; //approximate value
+}
+
+.lock-icon {
+  color: var(--zinc-500);
+}
+
+
+

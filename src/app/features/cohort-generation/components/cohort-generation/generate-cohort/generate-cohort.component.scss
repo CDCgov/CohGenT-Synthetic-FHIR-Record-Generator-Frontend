@@ -1,0 +1,13 @@
+@use '@angular/material' as mat;
+
+// Scoped to the current component only
+:host {
+  @include mat.expansion-overrides((
+    container-shape: 4px,  // Less rounded (default is usually 4px-12px, use 0px for sharp corners)
+    container-elevation-shadow: none,  // Remove drop shadow
+  ));
+  mat-expansion-panel {
+    border: 1px solid lightgrey;
+    background-color: #F4F9FE;
+  }
+}

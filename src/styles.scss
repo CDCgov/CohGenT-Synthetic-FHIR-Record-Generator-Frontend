@@ -1,0 +1,876 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+@use "sass:map";
+@use "sass:list";
+@use "sass:color";
+@use "sass:meta";
+
+// @import 'theme.scss';
+
+// html {
+//   @include mat.theme((
+//     color: (
+//       primary: mat.$azure-palette,
+//       tertiary: mat.$blue-palette,
+//     ),
+//     typography: Inter,
+//     density: 0,
+//   ));
+// }
+
+html {
+  /* Only light mode, pure grayscale */
+  color-scheme: light;
+  font-size: 14px;
+  line-height: 1.25em;
+
+  /* Base theme, using any built-in palette as a seed.
+     We immediately override the actual design tokens in $overrides. */
+  @include mat.theme((
+    color: (
+      theme-type: light,
+      primary: mat.$blue-palette,
+      use-system-variables: true,
+    ),
+    typography: (
+      brand-family: Inter, // Use Inter as the global font family
+      use-system-variables: true,
+    ),
+    density: -1,
+  ), $overrides: (
+    /* Core brand tokens, all grayscale */
+    primary: #333333,
+    on-primary: #ffffff,
+    secondary: #1a73e8,
+    on-secondary: #ffffff,
+
+    /* Surfaces */
+    surface: #ffffff,
+    on-surface: #0a0a0a,
+    surface-dim: #f4f4f5,
+    surface-bright: #ffffff,
+
+    surface-container-lowest: #ffffff,
+    surface-container-low: #f4f4f5,
+    surface-container: #f4f4f5,
+    surface-container-high: #e6e6e6,
+    surface-container-highest: #e0e0e0,
+
+    /* Borders and outlines */
+    outline: #d4d4d4,
+    outline-variant: #bfbfbf,
+
+    /* Error also kept neutral unless you later want red */
+    error: #444444,
+    on-error: #ffffff,
+  ));
+}
+
+/* Base document styling */
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+
+
+:root {
+  --radius-sm: .375rem;
+  --radius: .5rem;
+  --radius-lg: .75rem;
+  --card-bg: #ffffff;               /* bg-card */
+  --card-fg: #111827;               /* text-card-foreground */
+  --card-border: #ececec;           /* light border */
+  --card-radius-xl: 0.75rem;        /* rounded-xl */
+  --card-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);  /* shadow-sm */
+
+  /* Override Material Card Tokens */
+  --mat-card-elevated-container-color: var(--card-bg);
+  --mat-card-elevated-container-shape: var(--card-radius-xl);
+  --mat-card-elevated-container-elevation: var(--card-shadow-sm);
+
+  /* For outlined / filled variants (if ever used) */
+  --mat-card-outlined-container-color: var(--card-bg);
+  --mat-card-outlined-container-shape: var(--card-radius-xl);
+  --mat-card-outlined-container-elevation: none;
+  --mat-card-outlined-container-outline-color: var(--card-border);
+
+  --mat-card-filled-container-color: var(--card-bg);
+  --mat-card-filled-container-shape: var(--card-radius-xl);
+  --mat-card-filled-container-elevation: none;
+
+  /* Chart colors */
+
+  --chart-0:#10B981;
+  --chart-1:#3b70f6;
+  --chart-2:#EC4899;
+  --chart-3:#F59E0B;
+  --chart-4:#8B5CF6;
+  --chart-5:#06B6D4;
+  --chart-6:#F97316;
+  --chart-7:#14B8A6;
+}
+
+:root {
+  @include mat.progress-bar-overrides((
+    track-height: 1em,
+    active-indicator-height: 1em,
+    track-shape: 4px,
+  ));
+
+  @include mat.chips-overrides((
+    container-shape-radius: 1em,
+    label-text-size: x-small,
+    container-height: small
+  ));
+
+  @include mat.theme-overrides((
+    brand-family: Inter,
+    plain-family: Inter,
+    bold-weight: 600,
+    medium-weight: 500,
+    regular-weight: 400,
+    headline-large-font: var(--mat-sys-brand-font-family),
+    headline-medium-font: var(--mat-sys-brand-font-family),
+    headline-small-font: var(--mat-sys-brand-font-family),
+    display-large-font: var(--mat-sys-brand-font-family),
+    display-medium-font: var(--mat-sys-brand-font-family),
+    display-small-font: var(--mat-sys-brand-font-family),
+    title-large-font: var(--mat-sys-brand-font-family),
+    body-large: var(--mat-sys-body-large-weight) var(--mat-sys-body-large-size) / var(--mat-sys-body-large-line-height) var(--mat-sys-body-large-font),
+    body-medium: var(--mat-sys-body-medium-weight) var(--mat-sys-body-medium-size) / var(--mat-sys-body-medium-line-height) var(--mat-sys-body-medium-font),
+    body-small: var(--mat-sys-body-small-weight) var(--mat-sys-body-small-size) / var(--mat-sys-body-small-line-height) var(--mat-sys-body-small-font),
+    label-large: var(--mat-sys-label-large-weight) var(--mat-sys-label-large-size) / var(--mat-sys-label-large-line-height) var(--mat-sys-label-large-font),
+    label-medium: var(--mat-sys-label-medium-weight) var(--mat-sys-label-medium-size) / var(--mat-sys-label-medium-line-height) var(--mat-sys-label-medium-font),
+    label-small: var(--mat-sys-label-small-weight) var(--mat-sys-label-small-size) / var(--mat-sys-label-small-line-height) var(--mat-sys-label-small-font),
+    title-large: var(--mat-sys-title-large-weight) var(--mat-sys-title-large-size) / var(--mat-sys-title-large-line-height) var(--mat-sys-title-large-font),
+    title-medium: var(--mat-sys-title-medium-weight) var(--mat-sys-title-medium-size) / var(--mat-sys-title-medium-line-height) var(--mat-sys-title-medium-font),
+    title-small: var(--mat-sys-title-small-weight) var(--mat-sys-title-small-size) / var(--mat-sys-title-small-line-height) var(--mat-sys-title-small-font),
+    headline-large: var(--mat-sys-headline-large-weight) var(--mat-sys-headline-large-size) / var(--mat-sys-headline-large-line-height) var(--mat-sys-headline-large-font),
+    headline-medium: var(--mat-sys-headline-medium-weight) var(--mat-sys-headline-medium-size) / var(--mat-sys-headline-medium-line-height) var(--mat-sys-headline-medium-font),
+    headline-small: var(--mat-sys-headline-small-weight) var(--mat-sys-headline-small-size) / var(--mat-sys-headline-small-line-height) var(--mat-sys-headline-small-font),
+    display-large: var(--mat-sys-display-large-weight) var(--mat-sys-display-large-size) / var(--mat-sys-display-large-line-height) var(--mat-sys-display-large-font),
+    display-medium: var(--mat-sys-display-medium-weight) var(--mat-sys-display-medium-size) / var(--mat-sys-display-medium-line-height) var(--mat-sys-display-medium-font),
+    display-small: var(--mat-sys-display-small-weight) var(--mat-sys-display-small-size) / var(--mat-sys-display-small-line-height) var(--mat-sys-display-small-font),
+    body-large-font: var(--mat-sys-plain-font-family),
+    body-medium-font: var(--mat-sys-plain-font-family),
+    body-small-font: var(--mat-sys-plain-font-family),
+    label-large-font: var(--mat-sys-plain-font-family),
+    label-medium-font: var(--mat-sys-plain-font-family),
+    label-small-font: var(--mat-sys-plain-font-family),
+    title-medium-font: var(--mat-sys-plain-font-family),
+    title-small-font: var(--mat-sys-plain-font-family),
+    label-large-weight-prominent: var(--mat-sys-bold-font-weight),
+    label-medium-weight-prominent: var(--mat-sys-bold-font-weight),
+  ));
+  @include mat.card-overrides((
+    outlined-outline-width: 1px,
+    outlined-outline-color: #ececec
+  ));
+  @include mat.button-overrides((
+    filled-container-shape: 0.5rem,
+    outlined-container-shape: 0.5rem,
+    protected-container-shape: 0.5rem,
+    text-container-shape: 0.5rem,
+    tonal-container-shape: 0.5rem,
+  ));
+   @include mat.fab-overrides((
+    small-container-color: #ffffff,
+    small-container-elevation-shadow: rgba(0,0,0,0),
+    small-foreground-color: var(--zinc-600),
+    small-hover-container-elevation-shadow: #ffffff,
+    small-ripple-color: #ffffff
+
+  ));
+  @include mat.form-field-overrides((
+    error-text-color: #991B1B,
+    filled-error-caret-color: #991B1B,
+    outlined-error-outline-color: #991B1B,
+    container-height: 40px,
+    container-vertical-padding: 8px,
+    filled-with-label-container-padding-top: 8px,
+    filled-with-label-container-padding-bottom: 8px,
+    outlined-input-text-placeholder-color: #999999,
+    trailing-icon-color: var(--zinc-400),
+  ));
+  @include mat.divider-overrides((
+    color: #ececec,
+  ));
+}
+.rounded-0 { border-radius: 0 !important; }
+.rounded-1 { border-radius: 0.25rem !important; }
+.rounded-2 { border-radius: 0.5rem !important; }
+.rounded-3 { border-radius: 0.75rem !important; }
+.rounded-pill { border-radius: 9999px !important; }
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
+/* You can add global styles to this file, and also import other style files */
+
+
+/* Margins and Paddings */
+$xs: 4px;
+$sm: 8px;
+$md: 16px;
+$lg: 24px;
+.margin-none { margin: 0; }
+.margin-sm { margin: $sm; }
+.margin-md { margin: $md; }
+.margin-lg { margin: $lg; }
+.padding-none { padding: 0; }
+.padding-xs { padding: $xs; }
+.padding-sm { padding: $sm; }
+.padding-md { padding: $md; }
+.padding-lg { padding: $lg; }
+// Add more of the following as needed.
+.margin-bottom-xs { margin-bottom: $xs; }
+.margin-bottom-sm { margin-bottom: $sm; }
+.margin-bottom-md { margin-bottom: $md; }
+.margin-bottom-lg { margin-bottom: $lg; }
+.margin-top-xs { margin-top: $xs; }
+.margin-top-sm { margin-top: $sm; }
+.margin-top-md { margin-top: $md; }
+.margin-top-lg { margin-top: $lg; }
+.margin-left-md { margin-left: $md; }
+.margin-left-sm { margin-left: $sm; }
+.margin-left-lg { margin-left: $lg; }
+.margin-right-md { margin-right: $md; }
+.margin-right-sm { margin-right: $sm; }
+.padding-bottom-md { padding-bottom: $md; }
+.padding-top-md { padding-top: $md; }
+.padding-bottom-md { padding-bottom: $md; }
+.padding-left-md { padding-left: $md; }
+.padding-right-md { padding-right: $md; }
+.margin-right-lg { padding-right: $lg; }
+.border-radius-xs { border-radius: $xs; }
+
+.full-width-input {
+  width: 100%;
+}
+.file-input { display: none; }
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sticky header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  height: 60px;
+  align-items: center;
+  border-bottom: 1px solid #ebe6e7;
+}
+
+/* This is the ONLY scrolling container for page content */
+.app-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.app-content-wrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+
+  box-sizing: border-box;
+}
+
+.app-content {
+
+  margin: 0 auto;
+}
+
+// .app-footer {
+//   margin-top: 40px;
+// }
+
+
+
+
+/* Utility classes */
+.collapsed {
+  width: 60px;
+}
+
+/* Animation for smooth transitions */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif,  -apple-system, BlinkMacSystemFont;
+}
+//End auto-generated code
+
+.centered-vertically{
+  display: flex;
+  align-items: center;
+}
+
+
+.flex-row {
+  display: flex;
+  .col {
+    flex: 1;
+  }
+  .col-right-aligned {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+h1 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  // color: var(--zinc-900);
+  margin: 1rem 0 0;
+}
+h2{
+  font-size: 1.175rem;
+  font-weight: 400;
+  // color: var(--zinc-900);
+  margin: 0;
+}
+h3{
+  font-size: 1rem;
+  font-weight: 400;
+  // color: var(--zinc-900);
+}
+.label{
+  color: var(--zinc-600);
+  white-space: nowrap;
+}
+.field-label{
+  font-weight: 500;
+      color: #333333;
+}
+
+.centered-content{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mat-horizontal-stepper-header-container {
+  display: none !important;
+}
+
+
+/* Buttons */
+.mat-mdc-button {
+  border-radius: 0.05rem;
+  text-transform: none;
+  font-weight: 500;
+}
+.secondary-btn{
+
+    @include mat.button-overrides((
+    filled-container-color: var(--mat-sys-secondary),
+    filled-label-text-color: #ffffff,
+    outlined-outline-color: var(--mat-sys-secondary),
+    outlined-label-text-color:  var(--mat-sys-secondary),
+    outlined-state-layer-color: #ffffff,
+  ));
+
+  @include mat.fab-overrides((
+      container-color: #ffffff,
+      small-foreground-color:  var(--zinc-600),
+      small-container-color: rgba(0, 0, 0, 0),
+      small-state-layer-color:  var(--blue-50),
+      small-hover-container-elevation-shadow: var(--blue-50),
+      small-hover-state-layer-opacity: var(--blue-50),
+      small-pressed-state-layer-opacity: var(--blue-50),
+      small-ripple-color: var(--blue-50),
+      small-container-elevation-shadow: rgba(0,0,0,0)
+  ));
+
+
+  &:hover{
+      transition: all 0.2s ease-in-out;
+      color: var(--mat-sys-secondary);
+
+      &.outlined-fab{
+        border: 1px solid var(--mat-sys-secondary) !important;
+      }
+      &.mat-mdc-outlined-button{
+          background-color: var(--blue-50);
+      }
+  }
+ }
+.btn-success {
+   @include mat.button-overrides((
+    filled-container-color: var(--green-600),
+    filled-label-text-color: #ffffff,
+    outlined-outline-color: var(--green-600),
+    outlined-label-text-color:  var(--green-600),
+  ));
+}
+.btn-danger{
+  @include mat.button-overrides((
+      filled-container-color: var(--red-600),
+      filled-label-text-color: #ffffff,
+      outlined-outline-color: var(--red-600),
+      outlined-label-text-color: var(--red-600),
+  ));
+  @include mat.fab-overrides((
+      container-color: var(#ffffff),
+      small-foreground-color:  var(--zinc-600),
+      small-container-color: #ffffff,
+      small-state-layer-color:  var(--red-50),
+      small-hover-container-elevation-shadow: var(--red-50),
+      small-hover-state-layer-opacity: var(--red-50),
+      small-pressed-state-layer-opacity: var(--red-50),
+      small-ripple-color: var(--red-50),
+      small-container-elevation-shadow: rgba(0,0,0,0)
+  ));
+
+  &.outlined-fab {
+    &:hover{
+     border: 1px solid var(--red-500) !important;
+      @include mat.fab-overrides((
+        small-foreground-color:  var(--red-600),
+      ));
+    }
+  }
+
+  // &.mat-mdc-mini-fab{
+  //   color: var(--red-500)
+  // }
+}
+
+/* Outlined buttons */
+.mat-mdc-outlined-button {
+  border-radius: 0.25rem;
+  border: 1px solid #d4d4d4;
+  color: #111111;
+}
+.mat-mdc-fab-base{
+     border: 1px solid var(--mat-sys-outline);
+
+}
+.outlined-fab {
+   border: 1px solid var(--mat-sys-outline) !important;
+  background: transparent ;
+  box-shadow: none ;
+  color: var(--mdc-outlined-button-label-text-color, primary);
+}
+
+
+/* Cards */
+.mat-mdc-card {
+  border-radius: 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #d4d4d4;
+  box-shadow: none;
+  color: #111111;
+}
+
+/* Text fields */
+.mat-mdc-text-field-wrapper {
+  background-color: #fafafa;
+  border-radius: 0.5rem;
+  // border: 1px solid #d4d4d4;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  color: #6b6b6b;
+}
+
+.mdc-text-field__input,
+.mat-mdc-floating-label {
+  color: #111111;
+}
+
+/* Menus and selects */
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  border: 1px solid #d4d4d4;
+}
+
+.mat-mdc-option {
+  color: #111111;
+
+  &.mdc-list-item--selected,
+  &:hover:not(.mdc-list-item--disabled) {
+    background-color: #f4f4f5;
+  }
+}
+
+/* Tabs */
+.mat-mdc-tab-group,
+.mat-mdc-tab-nav-bar {
+  --mdc-tab-indicator-active-indicator-color: #111111;
+  --mat-tab-header-active-label-text-color: #111111;
+  --mat-tab-header-inactive-label-text-color: #6b6b6b;
+}
+
+/* Dialogs */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  border: 1px solid #d4d4d4;
+  box-shadow: none;
+}
+
+/*Card*/
+
+.mat-mdc-card {
+  background-color: var(--card-bg);
+  color: var(--card-foreground);
+  display: flex;
+  flex-direction: column;
+  min-height: fit-content;
+  height: auto;
+  gap: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--card-border);
+  padding: 1.5rem 1.5rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.mat-mdc-card .mdc-card__primary-action {
+  padding: 0;
+}
+.mat-mdc-card.card-outline {
+  box-shadow: none;
+}
+
+.required{
+  color:#bf2837
+}
+/////Tags
+$tag-padding: .5em .75em;
+$tag-height: 2.5em;
+$tag-radius: 4px;
+$tag-font-size: 0.75rem;
+
+$tag-colors: (
+  "black":   (#0a0a0a, #ffffff), // (Background, Text)
+  "dark":    (#363636, #ffffff),
+  "light":   (#f5f5f5, #363636),
+  "white":   (#ffffff, #0a0a0a),
+  "primary": (#00d1b2, #ffffff),
+  "link":    (#485fc7, #ffffff),
+  "info":    (#3e8ed0, #ffffff),
+  "success": (#48c78e, #ffffff),
+  "warning": (#ffe08a, #333333),
+  "danger":  (#bf2837, #ffffff)
+);
+.tag {
+  align-items: flex-start;
+  background-color: #f5f5f5;
+  border-radius: $tag-radius;
+  color: #4a4a4a;
+  display: inline-flex;
+  flex-direction: column;
+  font-size: $tag-font-size;
+  height: auto;
+  min-height: $tag-height;
+  justify-content: center;
+  line-height: 1.5;
+  padding: $tag-padding;
+  font-weight: 400;
+
+  .icon{
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    margin-right: 0.25rem;
+  }
+  &.is-rounded {
+    border-radius: 9999px;
+  }
+  &.form-tag{
+    height: 2em;
+    min-height: 0;
+
+    &.is-light{
+      color: var(--zinc-600)
+    }
+
+    &.is-white{
+      color: #0071eb;
+    }
+
+  }
+  &:not(:last-child) {
+    margin-right: 0.5rem;
+  }
+
+
+@each $name, $pair in $tag-colors {
+    $bg: list.nth($pair, 1);
+    $text: list.nth($pair, 2);
+
+    &.is-#{$name} {
+      background-color: $bg;
+      color: $text;
+
+      // Apply borders to the base white/light classes automatically
+      @if $name == "white" {
+          border: 1px solid #dbdbdb;
+      } @else if $name == "light" {
+          border: 1px solid color.adjust($bg, $lightness: -10%);
+      }
+
+      // 4. The "is-light" Modifier
+      // Generates .tag.is-primary.is-light, etc.
+      &.is-light {
+        @if $name == "white" or $name == "light" {
+            // Keep white and light tags as they are
+        } @else {
+            // Bulma-style light: Pale background, Dark text of same hue
+            background-color: color.mix(#fff, $bg, 90%);
+            color: color.adjust($bg, $lightness: -5%);
+            border: 1px solid color.adjust($bg, $lightness: 40%);
+            // Special case for very dark colors like black
+            @if $name == "black" {
+                background-color: #f5f5f5;
+                color: #0a0a0a;
+            }
+        }
+      }
+    }
+  }
+
+  // 5. Size Modifiers (Optional but helpful)
+  &.is-small { font-size: 0.65rem; }
+  &.is-medium { font-size: 1rem; }
+  &.is-large { font-size: 1.25rem; }
+
+  // Rounded/Pill style
+  &.is-rounded {
+    border-radius: 9999px;
+  }
+}
+//Helpers
+.w-full {
+  width: 100%;
+}
+.w-75 {
+  width: 75%;
+}
+.w-50 {
+  width: 50%;
+}
+.w-25 {
+  width: 25%;
+}
+.h-full {
+  height: 100%;
+}
+
+.cohort-info {
+    border-radius: 0.5em;
+    background-color: #ffffff;
+    padding: 1em;
+    border: 1px solid #ececec;
+    margin: 2em 0;
+}
+
+.panel {
+  border: 1px solid var(--zinc-200);
+  padding: 1.5em;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+
+  &.gray-bg {
+    background-color: var(--zinc-50);
+  }
+}
+
+.form-group {
+  flex-direction: column;
+  .field-label {
+      margin-bottom: .5em;
+      display: flex;
+      align-items: center;
+  }
+  .tooltip-icon {
+      width: 18px;
+      height: 18px;
+      font-size: 18px;
+      margin-left:4px;
+      color: var(--zinc-400);
+  }
+  .mat-mdc-form-field-hint-wrapper{
+    white-space: nowrap;
+  }
+  .mat-mdc-form-field {
+    .mat-mdc-input-element::placeholder {
+      color: var(--zinc-200);
+      font-style: italic;
+      font-size: 0.9em;
+    }
+    .mat-mdc-select-placeholder {
+      color: #999 !important;
+      opacity: 1;
+      font-style: italic;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.input-icon{
+    color: var(--zinc-400);
+    height: 20px !important;
+    width: 20px !important;
+    font-size: 20px;
+}
+
+.heading {
+  display: flex;
+
+}
+ .tooltip-icon {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+      margin-left:4px;
+      color: var(--zinc-400);
+      cursor: default
+  }
+
+.segmented-wrapper {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+  // height: 56px;
+  background: white;
+
+  // Static gray labels
+  .field-addon {
+    background-color: var(--zinc-100);
+    color: #4b5563;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    white-space: nowrap;
+    border-right: 1px solid #d1d5db;
+
+    &.border-left {
+      border-left: 1px solid #d1d5db;
+    }
+  }
+
+  // Shared logic for Material fields inside the segment
+   .mat-mdc-form-field {
+    border-right: 1px solid #d1d5db;
+
+    &:last-child { border-right: none; }
+
+    // Remove Material's internal padding/subscript
+    .mat-mdc-form-field-subscript-wrapper { display: none; }
+    .mat-mdc-text-field-wrapper {
+      padding: 0 !important;
+      background: transparent !important;
+    }
+    .mat-mdc-form-field-flex { height: 100%; align-items: center; }
+  }
+
+  .narrow-input {
+    width: 75px;
+    input {
+      text-align: center;
+      padding: 0 8px;
+    }
+  }
+
+  .unit-select {
+    width: 110px;
+     .mat-mdc-select-trigger {
+      padding: 0 8px;
+    }
+  }
+
+
+
+  // Active state
+  //   &:focus-within {
+  //     border-color: #3f51b5;
+  //     box-shadow: 0 0 0 1px #3f51b5;
+  //   }
+}
+.input-max-width {
+  max-width: 110px;
+  .mat-mdc-form-field-icon-suffix{
+    padding: 0;
+    .mat-icon{
+      padding: 0 8px;
+    }
+  }
+  .mat-mdc-form-field-error-wrapper{
+      padding: 0 4px;
+  }
+}
+.dialog-title {
+
+  &.mat-mdc-dialog-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #11181c;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 16px;
+
+    &::before{
+      height: auto ;
+    }
+  }
+}
+.dialog-footer{
+  border-top: 1px solid #f0f0f0 !important;
+  padding: 16px;
+  background-color: var(--zinc-50);
+}
+
+/* Set mat-tab content height for concept-form */
+app-concept-form .mat-mdc-tab-body-content {
+  overflow: visible !important;
+  height: 8em !important;
+}
+
+/* When manual entry tab is selected, allow full height */
+app-concept-form .tab-container.full-height .mat-mdc-tab-body-content {
+  height: auto !important;
+  overflow: visible !important;
+}

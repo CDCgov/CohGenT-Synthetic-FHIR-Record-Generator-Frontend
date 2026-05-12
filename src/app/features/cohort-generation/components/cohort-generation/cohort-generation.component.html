@@ -1,0 +1,15 @@
+@if (!this.cohortService.cohortData()?.selectedUseCase) {
+  <app-use-case-selection [useCaseList]="useCases()!"/>
+} @else {
+<!--
+  This is where all the master form data is collected.
+  It is only rendered after the user selects a use case, because the master form is data driven
+  and generated based on the selected use case
+-->
+  <app-form-manager></app-form-manager>
+}
+
+
+
+
+

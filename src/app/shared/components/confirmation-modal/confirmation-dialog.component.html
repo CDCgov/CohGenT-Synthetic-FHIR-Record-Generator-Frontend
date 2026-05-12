@@ -1,0 +1,16 @@
+<h1 mat-dialog-title>{{ data.title }}</h1>
+<div mat-dialog-content>
+  <span [innerHTML]="data.content"></span>
+</div>
+<div mat-dialog-actions align="end">
+  @if (!data.isPrimaryButtonLeft) {
+    <button matButton (click)="onSecondaryClick()">{{ data.secondaryActionBtnTitle }}</button>
+    <button matButton color="primary" (click)="onDefaultClick()" cdkFocusInitial>{{ data.primaryActionBtnTitle }}
+    </button>
+  }
+  @if (data.isPrimaryButtonLeft) {
+    <button matButton (click)="onDefaultClick()" cdkFocusInitial>{{ data.primaryActionBtnTitle }}</button>
+    <button matButton (click)="onSecondaryClick()">{{ data.secondaryActionBtnTitle }}</button>
+  }
+</div>
+

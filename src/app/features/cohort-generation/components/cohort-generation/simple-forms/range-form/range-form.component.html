@@ -1,0 +1,81 @@
+<form [formGroup]="form()">
+  @if (rangeOption(); as rOption) {
+    <div class="line-item" [formGroupName]="rOption.ruleId">
+      <div class="d-flex align-items-center">
+        <h2>{{ rOption.label }}</h2>
+          @if (rOption.tooltip) {
+            <mat-icon [matTooltip]="rOption.tooltip" class="ml-1 tooltip-icon">info</mat-icon>
+          }
+          @for(tag of option().tags; track tag){
+            @if((tag | chipsStr); as chipValue) {
+              <div class="tag is-rounded form-tag"
+                [class]="chipValue.toLowerCase() === 'required' ? 'is-danger is-light' : 
+                        chipValue.toLowerCase() === 'optional' ? 'is-white' : 
+                        'is-light'">
+                {{ chipValue }}
+              </div>
+            }
+          }
+      </div>
+      <div class="description">{{ rOption.description }}</div>
+      <div class="slider">
+        <mat-slider class="slider-width"
+                    [step]="rOption.minMax[1] < 1 ? 0.01 : 1"
+                    showTickMarks discrete>
+          <input formControlName="slider-min" matSliderStartThumb>
+          <input formControlName="slider-max" matSliderEndThumb>
+        </mat-slider>
+      </div>
+      <section class="d-flex align-items-center gap-4">
+        <div class="controls gap-4">
+          <div class="form-group">
+             <label class="field-label" for="min">Min</label>
+             <mat-form-field appearance="outline" class="input-max-width">
+              <input  id="min" type="number" matInput formControlName="min"
+                    [step]="rOption.decimalSpacesAllowed ? 0.01 : 1"
+                    [min]="rOption.minMax[0]"
+                    [max]="rOption.minMax[1]">
+              @if (form().get([rOption.ruleId, 'min'])?.errors?.['required']) {
+                <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+              }
+              @if (form().get([rOption.ruleId, 'min'])?.errors?.['min']) {
+                <mat-error>{{ ERROR_MSG.GREATER_THAN_OR_EQUAL_TO }} {{ rOption.minMax[0] }}</mat-error>
+              }
+              @if (form().get([rOption.ruleId, 'min'])?.errors?.['max']) {
+                <mat-error>{{ ERROR_MSG.LESS_THAN_OR_EQUAL_TO }} {{ rOption.minMax[1] }}</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="form-group">
+             <label class="field-label" for="max">Max</label>
+             <mat-form-field appearance="outline" class="input-max-width">
+                <input  id="max" type="number" matInput formControlName="max"
+                      [step]="rOption.decimalSpacesAllowed ? 0.01 : 1"
+                      [min]="rOption.minMax[0]"
+                      [max]="rOption.minMax[1]">
+                @if (form().get([rOption.ruleId, 'max'])?.errors?.['required']) {
+                  <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+                }
+                @if (form().get([rOption.ruleId, 'max'])?.errors?.['min']) {
+                  <mat-error>{{ ERROR_MSG.GREATER_THAN_OR_EQUAL_TO }} {{ rOption.minMax[0] }}</mat-error>
+                }
+                @if (form().get([rOption.ruleId, 'max'])?.errors?.['max']) {
+                  <mat-error>{{ ERROR_MSG.LESS_THAN_OR_EQUAL_TO }} {{ rOption.minMax[1] }}</mat-error>
+                }
+              </mat-form-field>
+          </div> 
+        </div>
+        <button matButton="outlined" type="button" (click)="onRestoreDefaults(rOption.ruleId)">
+          Restore Defaults
+        </button>
+      </section>
+      @if (form().get([rOption.ruleId])?.errors?.['minNotSmallerThanMax']
+      && !form().get([rOption.ruleId, 'max'])?.errors?.['required']
+      && !form().get([rOption.ruleId, 'min'])?.errors?.['required']) {
+        <mat-error>
+          Min {{ ERROR_MSG.LESS_THAN_OR_EQUAL_TO | lowercase }} to Max
+        </mat-error>
+      }
+    </div>
+  }
+</form>

@@ -1,0 +1,251 @@
+.hidden {
+  display: none;
+}
+.notes {
+  font-size: smaller;
+  margin: 8px 0;
+}
+
+.muti-input-controls {
+  display: grid !important;
+  gap: 1rem 2rem; /* Vertical gap, Horizontal gap */
+  align-items: start;
+  margin-top: 24px;
+
+
+  &.row-layout {
+    grid-template-columns: 1fr; /* Single column */
+  }
+
+  &.column-layout {
+     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .form-group {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+
+      .field-label {
+        flex: 2 1 0;
+      }
+      .input-group {
+        flex: 2 1 0;
+      }
+  }
+  .mat-mdc-form-field-icon-suffix{
+    padding: 0;
+  }
+}
+@media (max-width: 1100px) {
+  .muti-input-controls.column-layout {
+    grid-template-columns: 1fr;
+  }
+}
+// .row-layout {
+//   flex-direction: row;
+//   align-items: center;
+//   justify-content: flex-start;
+// }
+
+// .column-layout {
+//   flex-direction: column;
+//   align-items: flex-start;
+//   max-height: 25rem; //about how high 4 inputs are, but we can change this
+//   align-content: flex-start;
+// }
+
+.controls {
+  display: flex;
+  margin-top: 16px;
+  flex-wrap: wrap;
+
+  > .slider {
+    flex-grow: 1;
+  }
+
+  > .distribution-inputs {
+    display: flex;
+  }
+
+  > .col {
+    flex-grow: 1;
+  }
+}
+
+.slider-width {
+  width: 28rem; //approximate value
+}
+
+.lock-icon {
+  cursor: pointer;
+  color: var(--zinc-500);
+}
+
+.space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* shared offset for sticky elements: header height + page padding */
+:host {
+  --sticky-offset: var(--header-height); // adjust to match your app-header height
+  --header-height: 60px;
+}
+
+.flex-row {
+  display: flex;
+
+  align-items: flex-start;
+}
+
+/* Left nav column, fixed width, sticky */
+.cohort-aside-menu{
+  flex: 0 0 350px; // match your design
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: calc(100vh - var(--sticky-offset));
+  overflow-y: auto;
+   background-color: #fafafa;
+  border-right: 1px solid #ebe6e7;
+  padding: 1.5em;
+}
+
+/* Right column scrolls */
+.col {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Sticky stepper header (nav + progress bar) */
+.stepper-header {
+  position: sticky;
+  // top: var(--sticky-offset);
+  z-index: 50;
+  background: #fff;
+  padding-top: 8px;
+  padding-bottom: 16px;
+}
+
+/* Optional: ensure mat-step content has space below header */
+mat-step {
+  display: block;
+}
+
+/* Small helpers if needed */
+.centered-content {
+  text-align: center;
+}
+
+.right-aligned-content {
+  text-align: right;
+}
+
+.aside-description {
+  flex: 0 0 600px;
+  margin-left: 32px;
+  background-color: #fafafa;
+}
+
+.helper-text, .step-description, .description {
+  font-size: 0.875rem;
+  color: #6a7282;
+  margin-top: 4px;
+}
+
+.step-description{
+  max-width: 1280px;
+  margin-top: .75em;
+  font-size: 14px;
+  line-height: 1.45em;
+
+}
+.form-heading{
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.description{
+  margin-top: .75em;
+  max-width: 1000px;
+}
+
+.use-case-wrapper {
+  height: calc(100vh - var(--header-height)); // full viewport height minus header and some padding
+  gap: 32px;
+  align-items: stretch;
+}
+
+.stepper-content-container{
+  justify-content: center;
+  align-items: center;
+  max-width: 1280px;
+  width: 70%;
+  flex-basis: 70%;
+  margin-inline: auto;
+}
+
+.error-icon{
+  color: var(--red-600);
+  fill: var(--red-600);
+}
+.info-icon{
+  color: var(--zinc-400);
+}
+
+.generate-cohort-container{
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+
+.checkbox-container {
+  border: 1px solid #ddd;
+  padding: 8px 16px 8px 12px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: background-color 0.2s ease;
+
+  /* When the container HAS a checked mat-checkbox inside it */
+  &:has(.mat-mdc-checkbox-checked) {
+    background-color: #e3f2fd; /* Light blue */
+    border-color: #2196f3;
+  .checkbox-label{
+    font-weight: 600;}
+  }
+
+  /* Overriding Material theme variables directly on the host */
+  --mdc-checkbox-selected-focus-icon-color: #000;
+  --mdc-checkbox-selected-hover-icon-color: #000;
+  --mdc-checkbox-selected-icon-color: #000;
+  --mdc-checkbox-selected-pressed-icon-color: #000;
+}
+.custom-card-checkbox .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background {
+  background-color: #000 !important;
+  border-color: #000 !important;
+}
+
+/* Target the label text specifically */
+.custom-card-checkbox .mdc-label {
+  font-weight: 600;
+  font-style: italic;
+  color: #333;
+}
+
+
+.use-case-card{
+  max-width:800px;
+  width: 75%;
+}
+
+.concept-alert {
+  max-width: 450px;
+}
+
+.horizontal-center{
+  display: flex;
+  justify-content: center;
+}

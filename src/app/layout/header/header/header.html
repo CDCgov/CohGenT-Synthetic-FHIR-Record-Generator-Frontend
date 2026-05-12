@@ -1,0 +1,40 @@
+<div class="header d-flex centered-vertically flex-row h-full">
+  <div (click)="onReturnToHome()" class="logo" title="Return to Home">
+    <div class="mr-2 ml-3 logo-svg">
+      <svg class="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 400 400">
+        <path
+          d="M264.105 257.225L188.64 399.713L140.204 372.63L140.226 372.597L224.776 235.201L264.105 257.225ZM367.795 308.396L319.354 336.828H319.007L241.387 195.844L280.192 172.77L367.795 308.396ZM182.171 239.356L183.22 283.926L21.209 290.786V234.606L182.171 239.356ZM157.228 204.154L118.951 226.7L32.4033 90.5459L80.1787 62.1953L157.228 204.154ZM258.942 27.8906L258.917 27.9326L174.368 165.323L136.092 142.777L211.03 0.289062L258.942 27.8906ZM379.519 164.87H379.206L216.977 161.171V116.073L378.994 109.213L379.519 164.87Z"
+          fill="#000000" stroke="#000000" stroke-width="0.418333"/>
+      </svg>
+    </div>
+    <div class="logo-title">CohGenT</div>
+    <div class="logo-subtitle">Synthetic FHIR Record Generator</div>
+  </div>
+
+  <div>
+  </div>
+  <div class="col-right-aligned margin-right-lg gap-3">
+
+    <button matButton class="margin-left-md" (click)="onReturnToHome()">
+      <mat-icon>home</mat-icon>
+      Home
+    </button>
+    <!-- TODO link the documentation here -->
+    <button matButton matTooltip="Open documentation in a new window." (click)="onDocumentation()">
+      <mat-icon>article</mat-icon>
+      Documentation
+    </button>
+    @if(this.configService.config.contactEmail){
+      <button matButton (click)="sendEmail()">
+        <mat-icon>mail</mat-icon>
+        Contact Us
+      </button>
+      <button matButton="outlined" class="report-issue-btn" (click)="onReportIssue()"
+              matTooltip="Open default email client with the current cohort configuration included in the message.">
+        <mat-icon>warning</mat-icon>
+        Report Issue
+      </button>
+    }
+    <div class="version-text">Version: {{ configService?.config?.version }}</div>
+  </div>
+</div>

@@ -1,0 +1,149 @@
+<div class="card-container">
+  <div class="d-flex justify-content-around">
+    <mat-card class="use-case-card" appearance="outlined">
+      <mat-card-content>
+        <div>
+          <form [formGroup]="useCaseSelectionForm" (ngSubmit)="onSubmit()">
+            <div>
+              <h2>{{ LABELS.COHORT_SCENARIO }}</h2>
+              <div class="helper-text mt-2 flex-row margin-bottom-md">
+                {{ LABELS.COHORT_SCENARIO_DESCRIPTION }}
+              </div>
+            </div>
+            <div class="flex-row mt-2 mb-22">
+              <div class="col">
+                <mat-form-field appearance="outline" class="full-width-input">
+                  <mat-select formControlName="useCase">
+                    @for (useCase of useCaseList(); track useCase) {
+                      <mat-option [value]="useCase">{{ useCase.title }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+            <div class="helper-text flex-row margin-bottom-md">
+              {{ useCaseSelectionForm.controls['useCase'].value?.description }}
+            </div>
+            <div class="col form-group border-b pb-2">
+              <label class="field-label" for="cohortName">{{ LABELS.COHORT_NAME }}</label>
+              <div class="flex-row">
+                <mat-form-field class="full-width-input" appearance="outline">
+                  <input matInput formControlName="cohortName" cdkFocusInitial>
+                  @if (useCaseSelectionForm.controls['cohortName'].hasError('required')) {
+                    <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+                  }
+                </mat-form-field>
+                <div class="tag is-rounded form-tag margin-top-sm margin-left-sm"
+                     [class]="useCaseSelectionForm.controls['cohortName'].hasValidator(Validators.required) ? 'is-danger is-light' : 'optional is-white'">
+                  {{ useCaseSelectionForm.controls['cohortName'].hasValidator(Validators.required) ? 'Required' : 'Optional' }}
+                </div>
+              </div>
+            </div>
+            <div class="border-b mt-4 ">
+              <div class="flex-row margin-bottom-md">
+                <h2>{{ LABELS.COHORT_TIMING }}</h2>
+              </div>
+
+              <div class="flex-row field-label">
+                {{ LABELS.PRIMARY_EVENT_PERIOD }}
+              </div>
+              <div class="helper-text mt-2 flex-row margin-top-sm">
+                {{ LABELS.PRIMARY_EVENT_PERIOD_DESCRIPTION }}
+              </div>
+              <div class="flex-row gap-4 my-4">
+                <div class="col form-group">
+                  <div class="flex-row">
+                    <mat-form-field appearance="outline" class="full-width-input">
+                      <mat-label>Start</mat-label>
+                      <input id="start" matInput [matDatepicker]="start" formControlName="start"
+                             [min]="minDate" [max]="maxDate">
+                      <mat-hint>MM/DD/YYYY</mat-hint>
+                      <mat-datepicker-toggle matIconSuffix [for]="start"></mat-datepicker-toggle>
+                      <mat-datepicker #start></mat-datepicker>
+                      @if (useCaseSelectionForm.controls['start'].hasError('required')) {
+                        <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+                      } @else if (useCaseSelectionForm.controls['start'].hasError('startDateInvalid')) {
+                        <mat-error>{{ ERROR_MSG.START_DATE_MUST_BE_AFTER_END_DATE }}</mat-error>
+                      } @else if (useCaseSelectionForm.controls['start'].hasError('dateOutOfRange')) {
+                        <mat-error>Start date must be between {{ minDate | date }} and {{ maxDate | date }}</mat-error>
+                      }
+                    </mat-form-field>
+                    <div class="tag is-rounded form-tag margin-top-sm margin-left-sm"
+                         [class]="useCaseSelectionForm.controls['start'].hasValidator(Validators.required) ? 'is-danger is-light' : 'optional is-white'">
+                      {{ useCaseSelectionForm.controls['start'].hasValidator(Validators.required) ? 'Required' : 'Optional' }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col form-group">
+                  <div class="flex-row">
+                    <mat-form-field appearance="outline" class="full-width-input">
+                      <mat-label>End</mat-label>
+                      <input id="end" matInput [matDatepicker]="end" formControlName="end"
+                             [min]="minDate" [max]="maxDate">
+                      <mat-hint>MM/DD/YYYY</mat-hint>
+                      <mat-datepicker-toggle matIconSuffix [for]="end"></mat-datepicker-toggle>
+                      <mat-datepicker #end></mat-datepicker>
+                      @if (useCaseSelectionForm.controls['end'].hasError('required')) {
+                        <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+                      } @else if (useCaseSelectionForm.controls['end'].hasError('endDateInvalid')) {
+                        <mat-error>{{ ERROR_MSG.END_DATE_MUST_BE_BEFORE_START_DATE }}</mat-error>
+                      } @else if (useCaseSelectionForm.controls['end'].hasError('dateOutOfRange')) {
+                        <mat-error>End date must be between {{ minDate | date }} and {{ maxDate | date }}</mat-error>
+                      }
+                    </mat-form-field>
+                    <div class="tag is-rounded form-tag  margin-top-sm margin-left-sm"
+                         [class]="useCaseSelectionForm.controls['end'].hasValidator(Validators.required) ? 'is-danger is-light' : 'optional is-white'">
+                      {{ useCaseSelectionForm.controls['end'].hasValidator(Validators.required) ? 'Required' : 'Optional' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-row  margin-top-lg">
+              <div class="field-label">{{ LABELS.EXTEND_DATA_UNTIL }}</div>
+            </div>
+            <div class="helper-text flex-row margin-top-sm">
+              {{ LABELS.EXTEND_DATA_UNTIL_DESCRIPTION }}
+            </div>
+
+
+            <div class="flex-row my-4">
+              <div class="col form-group">
+                <div class="flex-row">
+                  <mat-form-field appearance="outline" class="full-width-input">
+                    <mat-label>Until</mat-label>
+                    <input matInput [matDatepicker]="until" formControlName="until"
+                           [min]="minDate" [max]="maxDate">
+                    <mat-hint>MM/DD/YYYY</mat-hint>
+                    <mat-datepicker-toggle matIconSuffix [for]="until"></mat-datepicker-toggle>
+                    <mat-datepicker #until></mat-datepicker>
+                    @if (useCaseSelectionForm.controls['until'].hasError('required')) {
+                      <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+                    } @else if (useCaseSelectionForm.controls['until'].hasError('untilDateInvalid')) {
+                      <mat-error>{{ ERROR_MSG.UNTIL_DATE_MUST_BE_AFTER_THE_END_DATE }}</mat-error>
+                    } @else if (useCaseSelectionForm.controls['until'].hasError('dateOutOfRange')) {
+                      <mat-error>Until date must be between {{ minDate | date }} and {{ maxDate | date }}</mat-error>
+                    }
+                  </mat-form-field>
+                  <div class="tag is-rounded form-tag margin-top-sm margin-left-sm"
+                       [class]="useCaseSelectionForm.controls['until'].hasValidator(Validators.required) ? 'is-danger is-light' : 'optional is-white'">
+                    {{ useCaseSelectionForm.controls['until'].hasValidator(Validators.required) ? 'Required' : 'Optional' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4">
+              <button class="w-100 py-4 secondary-btn" matButton="filled" type="submit">
+                <div class="p-4 d-flex align-items-center justify-content-center gap-2">
+                  {{ LABELS.BTN_LABELS.CONFIGURE_NEW_COHORT }}
+                  <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+                </div>
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

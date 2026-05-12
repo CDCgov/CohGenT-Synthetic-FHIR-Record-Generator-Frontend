@@ -1,0 +1,38 @@
+@for (rule of processedRules(); track rule.stepOrder) {
+  <div class="item-wrapper">
+    <div class="title-header">{{ rule.stepOrder }}. {{ rule.title | ruleTitle: rule.type }}</div>
+
+    @switch (rule.type) {
+      @case ('additional-data-time-series') {
+        <div class="margin-top-sm padding-md">
+          @for (eventSetValue of rule.data; track $index; let i = $index) {
+            <app-view-event-set
+              [data]="eventSetValue"
+              [index]="i"
+              [editEnabled]="false"
+            />
+          } @empty {
+            <div>No Values Recorded</div>
+          }
+        </div>
+      }
+      @case ('medication') {
+        <div class="margin-top-sm padding-md">
+          <app-medications-review [medications]="rule.medications"></app-medications-review>
+        </div>
+      }
+      @case ('custom') {
+        <div class="flex-row">
+          <app-defaults-summary
+            [title]="rule.title"
+            [rule]="getRuleByStepOrder(rule.stepOrder)!"
+            [stepFormValue]="getStepFormValueByOrder(rule.stepOrder)"
+            [reviewOnly]="true"
+            [units]="weightingHelperService.units()"
+          />
+        </div>
+      }
+
+    }
+  </div>
+}

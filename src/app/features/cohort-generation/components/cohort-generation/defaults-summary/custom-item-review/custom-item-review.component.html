@@ -1,0 +1,61 @@
+<div class="item-info flex-row">
+  <label class="margin-right-md">{{ option().label }}</label>
+
+  @if (option().control === 'location') {
+    <span class="formatted-value margin-left-md">
+      {{ option()?.value?.state?.name }} {{ option()?.value?.city }}
+    </span>
+  } @else if (option().control === 'concept') {
+    @if (option()?.value && (option()?.value?.display || option()?.value?.code)) {
+      <span class="formatted-value">
+        @if (option()?.value?.display) {
+          {{ option()?.value?.display }}
+        }
+        @if (option()?.value?.code) {
+          <span> {{ option()?.value?.code }}</span>
+        }
+        @if (option()?.value?.system) {
+          <span class="margin-left-md">{{ option()?.value | systemStr }}</span>
+        }
+      </span>
+    } @else {
+      <span class="formatted-value">No value recorded</span>
+    }
+  } @else if (option().control === 'relative-time-range') {
+    @if (option()?.value?.start?.value && option()?.value?.start?.unit) {
+      <span class="formatted-value">
+        Start: {{ option()?.value?.start?.value }} {{ option()?.value?.start?.unit }}
+        @if (option()?.value?.end?.value && option()?.value?.end?.unit) {
+          <span> | End: {{ option()?.value?.end?.value }} {{ option()?.value?.end?.unit }}</span>
+        }
+      </span>
+    } @else {
+      <span class="formatted-value">No value recorded</span>
+    }
+  } @else if (option().control === 'weighting') {
+    <!-- No value display for weighting -->
+  } @else {
+    <span class="formatted-value">{{ option() | summaryValueFormat }}</span>
+  }
+</div>
+
+@if (option().control === 'weighting') {
+  <div class="distribution-container" [class.compact]="compact()">
+    <div class="chart-box" [class.compact]="compact()">
+      <canvas #chartCanvas></canvas>
+    </div>
+
+    <div class="custom-legend" [class.compact]="compact()">
+      @for (entry of option().value; track entry[0]; let colorIdx = $index) {
+        <div class="legend-pill" [class.compact]="compact()">
+          <span
+            class="dot"
+            [style.background-color]="getThemeColorFromCSS(colorIdx)"
+          ></span>
+          <span class="name">{{ entry[0] }}</span>
+          <span class="pct">{{ entry[1] | percent: '1.0-2' }}</span>
+        </div>
+      }
+    </div>
+  </div>
+}

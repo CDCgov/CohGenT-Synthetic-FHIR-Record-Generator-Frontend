@@ -1,0 +1,468 @@
+@use "sass:map";
+@use "sass:list";
+@use "sass:color";
+@use "sass:meta";
+// ====================================================================
+// Comprehensive SCSS Utility File for Layout, Spacing, Dimensions, and Borders.
+// ====================================================================
+
+// --------------------------------------------------------------------
+// 1. CONFIGURATION
+// --------------------------------------------------------------------
+
+// A. Breakpoint Configuration
+$breakpoints: (
+  "sm": 576px,
+  "md": 768px,
+  "lg": 992px,
+  "xl": 1200px
+);
+
+// B. Spacing Scale Map (Margin and Padding sizes)
+$spacer: 1rem !default;
+$spacers: (
+  0: 0,
+  1: ($spacer * 0.25),
+  2: ($spacer * 0.5),
+  3: $spacer,
+  4: ($spacer * 1.5),
+  5: ($spacer * 3),
+  auto: auto
+);
+
+// C. Dimension Scale Map (Width and Height sizes)
+$dimension-sizes: (
+  "25": 25%, "50": 50%, "75": 75%, "100": 100%, "auto": auto, "vw-100": 100vw, "vh-100": 100vh
+);
+
+// D. Border Radius Scale
+$radius-sizes: (
+  "0": 0,
+  "1": 0.25rem,
+  "2": 0.5rem,
+  "3": 1rem,
+  "pill": 9999px, // For fully rounded edges
+  "circle": 50%
+);
+
+// E. Color Map (Define theme colors here)
+$theme-colors: (
+  "primary": #007bff,
+  "secondary": #6c757d,
+  "success": #28a745,
+  "danger": #dc3545,
+  "warning": #ffc107,
+  "info": #17a2b8,
+  "light": #f8f9fa,
+  "dark": #343a40
+);
+
+// F. Property Maps (Used by mixins)
+$flex-justify-values: ("start": flex-start, "center": center, "between": space-between, "around": space-around, "end": flex-end);
+$flex-align-values: ("start": flex-start, "center": center, "stretch": stretch);
+$spacing-properties: ("m": margin, "p": padding);
+$spacing-directions: ("": "", "t": top, "b": bottom, "l": left, "r": right, "x": (left right), "y": (top bottom));
+$dimension-properties: ("w": "width", "h": "height", "mw": "max-width", "mh": "max-height");
+$border-directions: ("t": top, "r": right, "b": bottom, "l": left);
+
+// G. Typography Scale
+$font-sizes: (
+  "xs":   ( size: 0.75rem,  line-height: calc(1 / 0.75) ),
+  "sm":   ( size: 0.875rem, line-height: calc(1.25 / 0.875) ),
+  "base": ( size: 1rem,     line-height: calc(1.5 / 1) ),
+  "lg":   ( size: 1.125rem, line-height: calc(1.75 / 1.125) ),
+  "xl":   ( size: 1.25rem,  line-height: calc(1.75 / 1.25) ),
+  "2xl":  ( size: 1.5rem,   line-height: calc(2 / 1.5) ),
+  "3xl":  ( size: 1.875rem, line-height: calc(2.25 / 1.875) ),
+  "4xl":  ( size: 2.25rem,  line-height: calc(2.5 / 2.25) ),
+  "5xl":  ( size: 3rem,     line-height: 1 ),
+  "6xl":  ( size: 3.75rem,  line-height: 1 ),
+  "7xl":  ( size: 4.5rem,   line-height: 1 ),
+  "8xl":  ( size: 6rem,     line-height: 1 ),
+  "9xl":  ( size: 8rem,     line-height: 1 )
+);
+
+// H. Font Weight Scale
+$font-weights: (
+  "thin":       100,
+  "extralight": 200,
+  "light":      300,
+  "normal":     400,
+  "medium":     500,
+  "semibold":   600,
+  "bold":       700,
+  "extrabold":  800,
+  "black":      900
+);
+
+//I. Base Colors
+
+$base-colors: (
+  // Neutrals (Gray/Zinc/Slate) - Using 'zinc' for common neutral
+  "zinc": (
+    50: #FAFAFA, 100: #F4F4F5, 200: #E4E4E7, 300: #D4D4D8, 400: #A1A1AA,
+    500: #71717A, 600: #52525B, 700: #3F3F46, 800: #27272A, 900: #18181B,
+    950: #09090B
+  ),
+
+  // Primary Hues
+  "red": (
+    50: #FEF2F2, 100: #FEE2E2, 200: #FECACA, 300: #FCA5A5, 400: #F87171,
+    500: #EF4444, 600: #DC2626, 700: #B91C1C, 800: #991B1B, 900: #7F1D1D,
+    950: #450A0A
+  ),
+  "orange": (
+    50: #FFF7ED, 100: #FFEDD5, 200: #FED7AA, 300: #FDBA74, 400: #FB923C,
+    500: #F97316, 600: #EA580C, 700: #C2410C, 800: #9A3412, 900: #7C2D12,
+    950: #431407
+  ),
+  "amber": (
+    50: #FFFBEB, 100: #FEF3C7, 200: #FDE68A, 300: #FCD34D, 400: #FBBF24,
+    500: #F59E0B, 600: #D97706, 700: #B45309, 800: #92400E, 900: #78350F,
+    950: #451A03
+  ),
+  "yellow": (
+    50: #FEFCE8, 100: #FEF9C3, 200: #FEF08A, 300: #FDE047, 400: #FACC15,
+    500: #EAB308, 600: #CA8A04, 700: #A16207, 800: #854D0E, 900: #713F12,
+    950: #422006
+  ),
+  "lime": (
+    50: #F7FEE7, 100: #EEFADF, 200: #E0F4BE, 300: #CAE28E, 400: #AAC25F,
+    500: #84A33B, 600: #6B882B, 700: #546B20, 800: #3E5118, 900: #2C3A10,
+    950: #151A09
+  ),
+  "green": (
+    50: #F0FDF4, 100: #DCFCE7, 200: #BBF7D0, 300: #86EFAD, 400: #4ADE80,
+    500: #22C55E, 600: #16A34A, 700: #15803D, 800: #166534, 900: #14532D,
+    950: #052E16
+  ),
+  "teal": (
+    50: #F0FDFA, 100: #CCFBF1, 200: #99F6E4, 300: #5EEAD4, 400: #2DD4BF,
+    500: #14B8A6, 600: #0D9488, 700: #0F766E, 800: #115E59, 900: #134E4A,
+    950: #042F2E
+  ),
+  "cyan": (
+    50: #ECFEFF, 100: #CFFAFE, 200: #A5F3FC, 300: #67E8F9, 400: #22D3EE,
+    500: #06B6D4, 600: #0891B2, 700: #0E7490, 800: #155E75, 900: #164E63,
+    950: #083344
+  ),
+  "blue": (
+    50: #EFF6FF, 100: #DBEAFE, 200: #BFDBFE, 300: #93C5FD, 400: #60A5FA,
+    500: #3B82F6, 600: #2563EB, 700: #1D4ED8, 800: #1E40AF, 900: #1E3A8A,
+    950: #172554
+  ),
+  "indigo": (
+    50: #EEF2FF, 100: #E0E7FF, 200: #C7D2FE, 300: #A5B4FC, 400: #818CF8,
+    500: #6366F1, 600: #4F46E5, 700: #4338CA, 800: #3730A3, 900: #312E81,
+    950: #1E1B4B
+  ),
+  "violet": (
+    50: #F5F3FF, 100: #EDE9FE, 200: #DDD6FE, 300: #C4B5FD, 400: #A78BFA,
+    500: #8B5CF6, 600: #7C3AED, 700: #6D28D9, 800: #5B21B6, 900: #4C1D95,
+    950: #2E1065
+  ),
+  "purple": (
+    50: #FAF5FF, 100: #F3E8FF, 200: #E9D5FF, 300: #D8B4FE, 400: #C084FC,
+    500: #A855F7, 600: #9333EA, 700: #7E22CE, 800: #6B21A8, 900: #581C87,
+    950: #3B0764
+  ),
+  "pink": (
+    50: #FDF2F8, 100: #FCE7F3, 200: #FBCFE8, 300: #F9A8D4, 400: #F472B6,
+    500: #EC4899, 600: #DB2777, 700: #BE185E, 800: #9D174D, 900: #831843,
+    950: #4A041E
+  ),
+  "rose": (
+    50: #FFF1F2, 100: #FEE2E2, 200: #FECACA, 300: #FDA4AF, 400: #FB7185,
+    500: #F43F5E, 600: #E11D48, 700: #BE123C, 800: #9F1239, 900: #881337,
+    950: #4C0519
+  )
+);
+
+
+// --------------------------------------------------------------------
+// 2. MIXIN GENERATORS
+// --------------------------------------------------------------------
+
+// --- A. Dimension Utility Generator ---
+@mixin dimension-utility-generator($suffix: "") {
+  @each $abbr, $property in $dimension-properties {
+    @each $key, $value in $dimension-sizes {
+      .#{$abbr}#{$suffix}-#{$key} { #{$property}: $value !important; }
+    }
+  }
+}
+
+// --- B. Spacing Utility Generator ---
+@mixin spacing-utility-generator($suffix: "") {
+  @each $property-abbr, $property-name in $spacing-properties {
+    @each $direction-abbr, $direction-sides in $spacing-directions {
+      @each $size-abbr, $size-value in $spacers {
+        $class-name: ".#{$property-abbr}#{$direction-abbr}#{$suffix}-#{$size-abbr}";
+        @if ($property-abbr == "m" and $size-abbr == auto) {
+          @if ($direction-sides == (left right)) {
+            #{$class-name} { margin-left: $size-value !important; margin-right: $size-value !important; }
+          } @else if ($direction-sides == "") {
+            #{$class-name} { margin: $size-value !important; }
+          }
+          @continue;
+        }
+
+        @if meta.type-of($direction-sides) == list {
+          #{$class-name} { @each $side in $direction-sides { #{$property-name}-#{$side}: $size-value !important; } }
+        } @else if $direction-sides != "" {
+          #{$class-name} { #{$property-name}-#{$direction-sides}: $size-value !important; }
+        } @else {
+          #{$class-name} { #{$property-name}: $size-value !important; }
+        }
+      }
+    }
+  }
+}
+
+// --- C. Flex Utility Generator ---
+@mixin flex-utility-generator($suffix: "") {
+  .d#{$suffix}-flex { display: flex !important; }
+  .flex#{$suffix}-row { flex-direction: row !important; }
+  .flex#{$suffix}-col { flex-direction: column !important; }
+  .flex#{$suffix}-wrap { flex-wrap: wrap !important; }
+
+  @each $key, $value in $flex-justify-values {
+    .justify-content#{$suffix}-#{$key} { justify-content: $value !important; }
+  }
+  @each $key, $value in $flex-align-values {
+    .align-items#{$suffix}-#{$key} { align-items: $value !important; }
+  }
+  .order#{$suffix}-0 { order: 0 !important; }
+  .flex#{$suffix}-grow-1 { flex-grow: 1 !important; }
+  @each $key, $value in $flex-align-values {
+    .align-self#{$suffix}-#{$key} { align-self: $value !important; }
+  }
+}
+
+// --- D. Border Utility Generator ---
+@mixin border-utility-generator($suffix: "") {
+
+  $default-border-color: #E4E4E7; 
+  
+  // 1. Basic Border & Border-0
+  .border#{$suffix} {
+    border: 1px solid $default-border-color !important;
+  }
+  .border#{$suffix}-0 {
+    border: 0 !important;
+  }
+
+  // 2. Directional Borders (border-t, border-r, etc.)
+  @each $dir-abbr, $dir-full in $border-directions {
+    .border#{$suffix}-#{$dir-abbr} {
+      border-#{$dir-full}: 1px solid $default-border-color !important;
+    }
+    .border#{$suffix}-#{$dir-abbr}-0 {
+      border-#{$dir-full}: 0 !important;
+    }
+  }
+
+  // 3. Border Color Utilities
+  @each $name, $color in $theme-colors {
+    .border#{$suffix}-#{$name} {
+      border-color: $color !important;
+    }
+  }
+
+  // 4. Border Radius 
+  @each $key, $value in $radius-sizes {
+    // Basic radius (e.g., .rounded-1)
+    .rounded#{$suffix}-#{$key} {
+      border-radius: $value !important;
+    }
+
+    // Directional radius - Top
+    .rounded#{$suffix}-top-#{$key} {
+      border-top-left-radius: $value !important;
+      border-top-right-radius: $value !important;
+    }
+
+    // Directional radius - Bottom
+    .rounded#{$suffix}-bottom-#{$key} {
+      border-bottom-left-radius: $value !important;
+      border-bottom-right-radius: $value !important;
+    }
+
+    // Directional radius - Left
+    .rounded#{$suffix}-left-#{$key} {
+      border-top-left-radius: $value !important;
+      border-bottom-left-radius: $value !important;
+    }
+
+    // Directional radius - Right
+    .rounded#{$suffix}-right-#{$key} {
+      border-top-right-radius: $value !important;
+      border-bottom-right-radius: $value !important;
+    }
+  }
+}
+
+// --- E. Typography Utility Generator ---
+@mixin typography-utility-generator($suffix: "") {
+  @each $name, $values in $font-sizes {
+    .text#{$suffix}-#{$name} {
+      font-size: map.get($values, size) !important;
+      line-height: map.get($values, line-height) !important;
+    }
+  }
+
+  // Helper for custom properties (e.g., text-main-title)
+  // If you have a variable --my-size, you can use .text-var-my-size
+  .text#{$suffix}-var {
+    font-size: var(--custom-text-size) !important;
+  }
+}
+
+// Separate mixin to generate the :root variables for typography
+@mixin generate-typography-variables() {
+  :root {
+    @each $name, $values in $font-sizes {
+      --text-#{$name}: #{map.get($values, size)};
+      --text-#{$name}--line-height: #{map.get($values, line-height)};
+    }
+  }
+}
+
+// --- F. Font Weight Utility Generator ---
+@mixin font-weight-utility-generator($suffix: "") {
+  @each $name, $weight in $font-weights {
+    .font#{$suffix}-#{$name} {
+      font-weight: $weight !important;
+    }
+  }
+}
+
+// --- G. Gap Utility Generator ---
+@mixin gap-utility-generator($suffix: "") {
+  @each $key, $value in $spacers {
+    // Standard Gap (Both X and Y)
+    .gap#{$suffix}-#{$key} {
+      gap: $value !important;
+    }
+    // Gap X (Column Gap)
+    .gap-x#{$suffix}-#{$key} {
+      column-gap: $value !important;
+    }
+    // Gap Y (Row Gap)
+    .gap-y#{$suffix}-#{$key} {
+      row-gap: $value !important;
+    }
+  }
+
+  // --- Variable/Arbitrary Helpers ---
+  // Usage: <div class="gap-var" style="--custom-gap: 13px">
+  .gap#{$suffix}-var {
+    gap: var(--custom-gap) !important;
+  }
+  .gap-x#{$suffix}-var {
+    column-gap: var(--custom-gap-x) !important;
+  }
+  .gap-y#{$suffix}-var {
+    row-gap: var(--custom-gap-y) !important;
+  }
+}
+
+@mixin generate-color-root-variables($colors) {
+  :root {
+    @each $hue, $shades in $colors {
+      @each $shade, $color-value in $shades {
+        --#{$hue}-#{$shade}: #{$color-value};
+      }
+    }
+  }
+}
+
+// --------------------------------------------------------------------
+// 3. EXECUTION
+// --------------------------------------------------------------------
+
+// A. Generate BASE (Mobile-First) Classes (No Suffix)
+@include flex-utility-generator();
+@include spacing-utility-generator();
+@include dimension-utility-generator();
+@include border-utility-generator();
+@include generate-typography-variables();
+@include typography-utility-generator();
+@include font-weight-utility-generator();
+@include gap-utility-generator();
+@include generate-color-root-variables($base-colors);
+
+// B. Generate RESPONSIVE Classes
+@each $key, $value in $breakpoints {
+  $suffix: #{"-" + $key}; // -sm, -md, etc.
+
+  @media (min-width: $value) {
+    @include flex-utility-generator($suffix);
+    @include spacing-utility-generator($suffix);
+    @include dimension-utility-generator($suffix);
+    @include border-utility-generator($suffix);
+    @include typography-utility-generator($suffix);
+    @include font-weight-utility-generator($suffix); 
+    @include gap-utility-generator($suffix);
+  }
+}
+
+
+
+
+
+
+// Alert Configuration
+$alert-padding-y: 0.75rem;
+$alert-padding-x: 1.25rem;
+$alert-margin-bottom: 1rem;
+$alert-border-radius: 0.25rem;
+$alert-border-width: 1px;
+
+// Base Alert Style
+.alert {
+  position: relative;
+  padding: $alert-padding-y $alert-padding-x;
+  margin-bottom: $alert-margin-bottom;
+  border: $alert-border-width solid transparent;
+  border-radius: $alert-border-radius;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+// Color Modifiers Loop
+@each $name, $color in $theme-colors {
+  .alert-#{$name} {
+    // Background: 80% lighter than base color
+    background-color: color.mix(#fff, $color, 90%);
+    
+    // Border: 70% lighter than base color (slightly darker than bg)
+    border-color: color.mix(#fff, $color, 70%);
+    
+    // Text: 20% - 40% darker than base color for readability
+    color: color.adjust($color, $lightness: -25%);
+
+    // Handle specific cases for 'light' and 'dark' if they exist in your map
+    @if $name == "light" {
+      background-color: #fefefe;
+      border-color: #fdfdfe;
+      color: #818182;
+    } @else if $name == "dark" {
+      background-color: #d6d8d9;
+      border-color: #c6c8ca;
+      color: #1b1e21;
+    }
+    
+    // Link styling inside alerts
+    .alert-link {
+      font-weight: 700;
+      color: color.adjust($color, $lightness: -40%);
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+

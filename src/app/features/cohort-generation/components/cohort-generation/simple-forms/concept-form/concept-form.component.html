@@ -1,0 +1,149 @@
+<div class="form-heading">
+  <h2>{{ option().label }}</h2>
+
+  @if (option().tooltip) {
+    <mat-icon [matTooltip]="option().tooltip" class="tooltip-icon">info</mat-icon>
+  }
+  @for (tag of option().tags; track tag) {
+    @if ((tag | chipsStr); as chipValue) {
+      <div class="tag is-rounded form-tag"
+           [class]="chipValue.toLowerCase() === 'required' ? 'is-danger is-light' :
+                    chipValue.toLowerCase() === 'optional' ? 'is-white' :
+                    'is-light'">
+        {{ chipValue }}
+      </div>
+    }
+  }
+</div>
+<div class="description">{{ option().description }}</div>
+<div class="tab-container"
+     [ngClass]="{'invalid-border': form()?.get([option().ruleId])?.touched && form()?.get([option().ruleId])?.invalid,
+                 'full-height': selectedTabId === 'enterConceptManually'}">
+  <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" class="margin-top-md"
+                 (selectedTabChange)="onTabChange($event)">
+
+    <mat-tab label="Search For Concept" id="searchForConcept">
+      <div class="margin-top-lg">
+        <div class="description">Select "Open Search for Concept" to look-up and select a concept.</div>
+      </div>
+      <div class="flex-row margin-top-lg">
+        <button matButton="outlined" class="secondary-btn" aria-label="Search for Concept" type="button"
+                (click)="onSearchConcept(false)">
+          <mat-icon>search</mat-icon>
+          Open Search Concept
+        </button>
+      </div>
+    </mat-tab>
+
+
+    @if (option().tags?.indexOf('enable-preset-condition') > 0) {
+      <mat-tab label="Select Preset Concept" id="selectFromPresetConcept">
+        <div class="margin-top-lg">
+          <div class="description">
+            Select "Open Preset Concept List" to choose a concept from a list of common conditions.
+          </div>
+        </div>
+        <div class="flex-row margin-top-lg">
+          <button matButton="outlined" aria-label="Select Concept Concepts" class="secondary-btn" type="button"
+                  (click)="onSearchConcept(true)">
+            <mat-icon>list</mat-icon>
+            Open Preset Concept List
+          </button>
+        </div>
+      </mat-tab>
+    }
+
+    <mat-tab label="Enter Concept Manually" id="enterConceptManually">
+      <div class="margin-top-lg">
+        <div class="description">
+          Select the concept's system and enter in the code and display. At least either code or display is required.
+        </div>
+      </div>
+      <form [formGroup]="form()">
+        <div class=line-item [formGroupName]=option().ruleId>
+          <div class="controls">
+            <div class="flex-row gap-3">
+              <div class="col">
+                <div class="form-group d-flex flex-wrap">
+                  <label class="field-label" for="system">
+                    System
+                    <mat-icon class="margin-left-xs tooltip-icon" [matTooltip]="LABELS.SYSTEM">info</mat-icon>
+                  </label>
+                  <mat-form-field appearance="outline">
+                    <mat-select id="system" formControlName="system" [placeholder]="formFieldHints()?.SYSTEM ?? ''">
+                      @for (system of SYSTEM_LIST; track system) {
+                        <mat-option [value]="system.uri">{{ system.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                @if (form()?.get([option().ruleId, 'system'])?.value == 'other') {
+                  <div class="form-group d-flex flex-wrap">
+                    <label class="field-label" for="systemUri">
+                      System URI
+                      <mat-icon class="margin-left-xs tooltip-icon" [matTooltip]="LABELS.SYSTEM_URI"> info</mat-icon>
+                    </label>
+                    <mat-form-field appearance="outline"
+                                    [hintLabel]="formFieldHints()?.SYSTEM_URI ?? 'If other, please specify FHIR URI if known'">
+                      <input id="systemUri" type="text" matInput formControlName="systemUri">
+                    </mat-form-field>
+                  </div>
+                }
+
+              </div>
+              <div class="col">
+                <div class="flex-row">
+                  <div class="form-group d-flex flex-wrap margin-right-md">
+                    <label class="field-label" for="code">
+                      Code
+                      <mat-icon class="margin-left-xs tooltip-icon" [matTooltip]="LABELS.CODE">info</mat-icon>
+                    </label>
+                    <mat-form-field appearance="outline">
+                      <input type="text" matInput formControlName="code" [placeholder]="formFieldHints()?.CODE ?? ''">
+                    </mat-form-field>
+                  </div>
+                  <div class="form-group d-flex flex-wrap">
+                    <label class="field-label" for="display">
+                      Display
+                      <mat-icon class="tooltip-icon margin-left-xs" [matTooltip]="LABELS.DISPLAY">info</mat-icon>
+                    </label>
+                    <mat-form-field appearance="outline">
+                      <input id="display" type="text" matInput formControlName="display"
+                             [placeholder]="formFieldHints()?.DISPLAY ?? ''">
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="flex-row">
+                  @if ((form().get([option().ruleId])?.touched) && form().get([option().ruleId])?.errors?.['codeOrDisplayRequired']) {
+                    <mat-error class="alert alert-danger concept-alert centered-vertically" role="alert">
+                      Either Concept Code or Display is Required.
+                    </mat-error>
+                  }
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </mat-tab>
+
+  </mat-tab-group>
+  @if (selectedTabId === 'selectFromPresetConcept' || selectedTabId === 'searchForConcept') {
+    <div class="margin-top-md">
+      <mat-divider></mat-divider>
+    </div>
+    <app-concept-simple-display
+      [conceptValue]="form()?.get([option().ruleId])?.value"
+      [showEmptyMessage]="true"
+      [emptyMessage]="selectedTabId == 'selectFromPresetConcept' ?
+        'Select a concept from the preset list and it will be shown here.' :
+        selectedTabId == 'searchForConcept' ?
+        'Search for and select a concept and it will be shown here.' : ''">
+    </app-concept-simple-display>
+  }
+</div>
+
+
+
+

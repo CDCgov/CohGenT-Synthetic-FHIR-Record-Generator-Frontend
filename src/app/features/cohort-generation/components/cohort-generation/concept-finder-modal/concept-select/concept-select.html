@@ -1,0 +1,55 @@
+@for(condition of presetConditions(); track condition.name){
+  <div class="item">
+    <div class="heading"><span class="name">{{ condition.name }}</span></div>
+    <div class="primary">
+      @if(condition.primaryCodes && condition.primaryCodes.length > 0){
+        <div class="section-header">Primary Diagnosis Codes:</div>
+        @for(primary of condition.primaryCodes; track primary.code){
+          <div class="code-item">
+            <span class="display">{{ primary.display }}</span>
+            <div>
+              <div class="code-tag">
+                <div class="system">{{ primary.system }}</div>
+                <div class="code">{{ primary.code }}</div>
+              </div>
+            </div>
+
+            <button matButton="filled" (click)="useConcept(primary)">
+              Use This Concept
+            </button>
+          </div>
+        }
+      }@else{
+        <div class="section-header no-codes">No Primary Diagnosis Codes</div>
+      }
+    </div>
+    @if(condition.secondaryCodes && condition.secondaryCodes.length > 0){
+      <div class="secondary">
+        <div class="secondary-header" (click)="toggleExpanded(condition.name)">
+          Related Diagnosis Codes:
+          @if(isExpanded(condition.name)){
+            <mat-icon>arrow_drop_up</mat-icon>
+          }@else{
+            <mat-icon>arrow_drop_down</mat-icon>
+          }
+        </div>
+        @if(isExpanded(condition.name)){
+          @for(secondary of condition.secondaryCodes; track secondary.code){
+            <div class="code-item">
+              <span class="display">{{ secondary.display }}</span>
+              <div>
+                 <div class="code-tag">
+                  <div class="system">{{secondary.system }}</div>
+                  <div class="code">{{ secondary.code }}</div>
+                </div>
+              </div>
+              <button matButton="outlined" (click)="useConcept(secondary)">
+                Use This Concept
+              </button>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+}

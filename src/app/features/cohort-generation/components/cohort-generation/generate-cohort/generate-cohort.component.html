@@ -1,0 +1,127 @@
+<section class="generate-cohort-container">
+  <form [formGroup]="form()" (ngSubmit)="onSubmit()">
+    <mat-card appearance="outlined">
+      <mat-card-content>
+        <div class="line-item pb-4 d-flex flex-col" formGroupName="numberOfPatients">
+          <div class="field-label">{{ LABELS.NUMBER_OF_PATIENTS }}</div>
+          <div class="description">{{ LABELS.NUMBER_OF_PATIENTS_DESCRIPTION }}</div>
+          <div class="slider">
+            <mat-slider class="slider-width"
+                        [min]="LABELS.MIN_MAX_PATIENTS.MIN"
+                        [max]="LABELS.MIN_MAX_PATIENTS.MAX"
+                        [step]="1" discrete>
+              <input formControlName="slider" matSliderThumb>
+            </mat-slider>
+          </div>
+          <div class="w-full d-flex  margin-top-sm">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>{{ LABELS.NUMBER_OF_PATIENTS }}</mat-label>
+              <input type="text" matInput formControlName="input">
+              <mat-hint>{{ LABELS.SELECT_BETWEEN }}</mat-hint>
+              @if (form().get(['numberOfPatients', 'input'])?.errors?.['required']) {
+                <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+              }
+              @if (form().get(['numberOfPatients', 'input'])?.errors?.['min']
+              ||
+              (form().get(['numberOfPatients', 'input'])?.errors?.['max'])) {
+                <mat-error>{{ LABELS.SELECT_BETWEEN }}</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="margin-bottom-lg margin-top-sm">
+          <mat-accordion>
+            <mat-expansion-panel togglePosition="before">
+              <mat-expansion-panel-header>
+                <mat-panel-title> Advanced Options</mat-panel-title>
+              </mat-expansion-panel-header>
+              <div class="row">
+                <div class="field-label">{{ LABELS.RANDOM_SEED }}
+                  <mat-icon [matTooltip]="LABELS.RANDOM_SEED_TOOLTIP" class="tooltip-icon ml-2">info_outline</mat-icon>
+                </div>
+                <div class="description margin-bottom-md">{{ LABELS.RANDOM_SEED_DESCRIPTION }}</div>
+                <div class="margin-top-lg d-flex gap-3">
+                  <mat-form-field appearance="outline" class="w-50">
+                    <mat-label>{{ LABELS.RANDOM_SEED }}</mat-label>
+
+                    <input type="number" matInput formControlName="seed">
+                    @if (form().get(['seed'])?.errors?.['required']) {
+                      <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
+                    }
+                    @if (form().get(['seed'])?.errors?.['min']) {
+                      <mat-error>{{ ERROR_MSG.POSITIVE_REQUIRED }}</mat-error>
+                    }
+                    @if (form().get(['seed'])?.errors?.['max']) {
+                      <mat-error>The seed cannot exceed 10 digits</mat-error>
+                    }
+                  </mat-form-field>
+                  <button type="button" matButton="outlined" (click)="onGenerateNewRandomSeed()">
+                    {{ LABELS.BTN_LABELS.GENERATE_NEW_RANDOM_SEED }}
+                  </button>
+                </div>
+              </div>
+              <!--            TODO: Uncomment when there are more than one bundle types-->
+              <!--            <div class="row margin-top-md">-->
+              <!--              <div class="field-label">{{ LABELS.SELECT_BUNDLE_TYPE }}</div>-->
+              <!--              <div class="margin-top-sm">-->
+              <!--                <mat-form-field appearance="outline" class="margin-top-sm w-full">-->
+              <!--                  <mat-label>{{ LABELS.SELECT_BUNDLE_TYPE }}</mat-label>-->
+              <!--                  <mat-select formControlName="bundleType" cdkFocusInitial>-->
+              <!--                    @for (bundleType of generateCohortHelperService.bundleTypes; track bundleType) {-->
+              <!--                      <mat-option [value]="bundleType.value">{{ bundleType.display }}</mat-option>-->
+              <!--                    }-->
+              <!--                  </mat-select>-->
+              <!--                </mat-form-field>-->
+              <!--              </div>-->
+              <!--            </div>-->
+
+              <div class="row margin-top-md">
+                <div class="field-label">{{ LABELS.SELECT_OUTPUT_FORMAT }}
+                  <mat-icon [matTooltip]="LABELS.SELECT_OUTPUT_FORMAT_TOOLTIP" class="tooltip-icon ml-2">info_outline</mat-icon>
+                </div>
+                <div class="description margin-bottom-md">{{ LABELS.SELECT_OUTPUT_FORMAT_INSTRUCTIONS }}</div>
+                <div class="margin-top-sm">
+                  <mat-form-field appearance="outline" class="margin-top-sm w-full">
+                    <mat-label>{{ LABELS.SELECT_OUTPUT_FORMAT }}</mat-label>
+                    <mat-select formControlName="outputFormat">
+                      @for (outputFormat of generateCohortHelperService.outputFormats; track outputFormat) {
+                        <mat-option [value]="outputFormat.value">{{ outputFormat.display }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </div>
+
+        <button matButton="filled" type="submit" class="w-full secondary-btn">
+          {{ LABELS.BTN_LABELS.GENERATE_COHORT }}
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </form>
+
+  @if (cohortGeneratedSuccessfully()) {
+    <mat-card appearance="outlined" class="margin-top-lg">
+      <div class="flex-row">
+        <div class="col">
+          <div class="notes"> {{ cohortInfo()?.name }}</div>
+          <div class="notes margin-top-sm"> {{ cohortInfo()?.timestamp | date:'MM/dd/yyyy, hh:mm:ss a' }}</div>
+        </div>
+        <div class="col-right-aligned">
+          <button matButton="outlined" (click)="onDownloadCohort.emit()">
+            <mat-icon>download</mat-icon>
+            Download
+          </button>
+          <button matButton="outlined" (click)="onViewSummary.emit()" class="margin-left-md">
+            <mat-icon>open_in_new</mat-icon>
+            View Summary
+          </button>
+        </div>
+      </div>
+    </mat-card>
+  }
+
+
+</section>

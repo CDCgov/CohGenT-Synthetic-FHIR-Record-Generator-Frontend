@@ -1,0 +1,57 @@
+<form [formGroup]="form()">
+  @for (option of options(); track option) {
+    @if (option.control == "checkbox" && form().controls[`custom_${index()}`]) {
+      <div class="line-item">
+        <app-checkbox-form
+          [option]="option"
+          [originalFrom]="originalFrom().controls[`custom_${index()}`] | asFormGroup"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup">
+        </app-checkbox-form>
+      </div>
+    } @else if (option.control == "weighting") {
+      <div class="line-item">
+        <app-weighting-form
+          [option]="option"
+          [originalFrom]="originalFrom().controls[`custom_${index()}`] | asFormGroup"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup"
+        >
+        ></app-weighting-form>
+      </div>
+    } @else if (option.control == "range") {
+      <div class=line-item>
+        <app-range-form
+          [option]="option"
+          [originalFrom]="originalFrom().controls[`custom_${index()}`] | asFormGroup"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup">
+        </app-range-form>
+      </div>
+    } @else if (option.control == "location") {
+      <div class=line-item>
+        <app-location-form
+          [option]="option"
+          [originalFrom]="originalFrom().controls[`custom_${index()}`] | asFormGroup"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup">
+        </app-location-form>
+      </div>
+    } @else if (option.control == "concept") {
+      <div class=line-item>
+        <app-concept-form
+          [formFieldHints]="CONCEPT_HINTS"
+          [option]="option"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup"
+          [searchTermHint]="index() == 1 ? SEARCH_TERM_HINT :''">
+        </app-concept-form>
+      </div>
+    } @else if (option.control == "relative-time-range") {
+      <div class="d-flex w-full line-item">
+        <app-relative-time-range
+          [option]="option"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup">
+        </app-relative-time-range>
+      </div>
+    }
+    <div class="margin-top-lg margin-bottom-md">
+      <mat-divider/>
+    </div>
+  }
+</form>

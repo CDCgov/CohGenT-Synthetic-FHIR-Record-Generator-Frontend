@@ -1,0 +1,50 @@
+@use '@angular/material' as mat;
+
+// Scoped to the current component only
+:host {
+  @include mat.expansion-overrides((
+    container-shape: 4px,  // Less rounded (default is usually 4px-12px, use 0px for sharp corners)
+    container-elevation-shadow: none,  // Remove drop shadow
+  ));
+  mat-expansion-panel {
+    border: 1px solid lightgrey;
+    background-color: #F4F9FE;
+  }
+}
+
+.title-label{
+  font-weight: 500;
+  font-size: larger;
+  color: #333;
+}
+
+.label{
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.helper-text {
+  font-size: 0.875rem;
+  color: #6a7282;
+  margin-top: 8px;
+}
+
+.panel {
+  &.d-flex {
+    display: flex;
+
+    .flex-grow-1 {
+      flex: 1 1 auto;
+      min-width: 0; // Prevents flex item from overflowing
+    }
+
+    .flex-shrink-0 {
+      flex: 0 0 auto;
+    }
+  }
+}
+
+.gap-3 {
+  gap: 1rem;
+}
+

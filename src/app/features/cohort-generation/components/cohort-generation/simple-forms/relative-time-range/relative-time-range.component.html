@@ -1,0 +1,76 @@
+<section class="">
+  <div class=" my-2">
+    <div class="form-heading">
+        <h2>{{ option().label }}</h2>
+      @if (option().tooltip) {
+        <mat-icon [matTooltip]="option().tooltip" class="tooltip-icon">info</mat-icon>
+      }
+      @for(tag of option().tags; track tag){
+        @if((tag | chipsStr); as chipValue) {
+          <div class="tag is-rounded form-tag"
+            [class]="chipValue.toLowerCase() === 'required' ? 'is-danger is-light' :
+                    chipValue.toLowerCase() === 'optional' ? 'is-white' :
+                    'is-light'">
+            {{ chipValue }}
+          </div>
+        }
+      }
+    </div>
+
+    <div class="description mb-2">{{ option().description }}</div>
+  </div>
+
+  <form [formGroup]="form()">
+    <div class="panel gray-bg line-item" [formGroupName]="option().ruleId">
+      <div class="form-group">
+        <div class="segmented-wrapper">
+
+          <ng-container formGroupName="start">
+            <div class="field-addon">Onset</div>
+            <div class="field-addon border-left">Plus (+)</div>
+
+            <mat-form-field class="narrow-input">
+              <input type="number" matInput formControlName="value" [min]="0">
+            </mat-form-field>
+
+            <mat-form-field class="unit-select">
+              <mat-select formControlName="unit">
+                @for (unit of TIME_PERIOD_UNIT_LIST; track unit) {
+                  <mat-option [value]="unit.value">{{ unit.display }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+
+          <div class="field-addon border-left">to</div>
+
+          <ng-container formGroupName="end">
+            <mat-form-field class="narrow-input">
+              <input type="number" matInput formControlName="value" [min]="0">
+            </mat-form-field>
+
+            <mat-form-field class="unit-select">
+              <mat-select formControlName="unit">
+                @for (unit of TIME_PERIOD_UNIT_LIST; track unit) {
+                  <mat-option [value]="unit.value">{{ unit.display }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+
+        </div>
+
+        @if (form().get([option().ruleId])?.errors?.['startBeforeEnd']) {
+          <mat-error class="alert alert-danger margin-top-sm">
+            End days {{ ERROR_MSG.GREATER_THAN | lowercase }} start days
+          </mat-error>
+        }
+        @if (form().get([option().ruleId])?.errors?.['valueNotPositive']) {
+          <mat-error class="alert alert-danger margin-top-sm">
+            Values must greater or equal to 0
+          </mat-error>
+        }
+      </div>
+    </div>
+  </form>
+</section>

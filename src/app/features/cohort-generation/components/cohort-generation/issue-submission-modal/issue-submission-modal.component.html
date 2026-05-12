@@ -1,0 +1,27 @@
+<div class="dialog-title" mat-dialog-title>
+  Report Issue
+</div>
+<form [formGroup]="form" class="full-height-form">
+  <mat-dialog-content class="full-height-content">
+    <mat-form-field appearance="outline" class="full-width-field">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="6"></textarea>
+      @if (form.get('description')?.hasError('required')) {
+        <mat-error>
+          Description is required
+        </mat-error>
+
+      }
+      <mat-hint>Briefly describe the issue you are experiencing</mat-hint>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button type="button" (click)="onClose()">
+      Cancel
+    </button>
+    <button mat-stroked-button type="submit" [disabled]="form.invalid" (click)="onSubmit()">
+      Submit
+    </button>
+  </mat-dialog-actions>
+</form>

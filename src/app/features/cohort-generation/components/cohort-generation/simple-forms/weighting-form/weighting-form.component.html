@@ -1,0 +1,152 @@
+<form [formGroup]="form()">
+  <div  [formGroupName]="option().ruleId">
+    @if (weightingOption(); as wOption) {
+      @if (wOption.defaultValues.values.length === 2) {
+       <div class="form-heading">
+          <h2>{{ wOption.label }}</h2>
+         
+            @if (wOption.tooltip) {
+              <mat-icon [matTooltip]="wOption.tooltip" class="margin-left-md tooltip-icon">info</mat-icon>
+            }
+             @for(tag of option().tags; track tag){
+              @if((tag | chipsStr); as chipValue) {
+                <div class="tag is-rounded form-tag"
+                  [class]="chipValue.toLowerCase() === 'required' ? 'is-danger is-light' : 
+                          chipValue.toLowerCase() === 'optional' ? 'is-white' : 
+                          'is-light'">
+                  {{ chipValue }}
+                </div>
+              }
+            }
+        </div>
+        <div class="description">{{ wOption.description }}</div>
+        <div class="slider">
+          <mat-slider class="slider-width"
+                      [min]="0"
+                      [max]="units() === 'percent' ? 100 : 1"
+                      [step]="units() === 'percent' ? 1 : 0.01" showTickMarks discrete>
+            <input formControlName="slider" matSliderThumb>
+          </mat-slider>
+        </div>
+        <div class="controls">
+          <div class="d-flex align-items-center gap-4">
+             <div class="form-group ">
+                <label class="field-label">{{ wOption.defaultValues.values[0].value }}</label>
+                <mat-form-field class="input-max-width" appearance="outline">
+                  <!-- <mat-label>{{ wOption.defaultValues.values[0].value }}</mat-label> -->
+                  <input  type="number" matInput formControlName="0" min="0" [max]="units() === 'percent' ? 100 : 1">
+                  @if (units() === 'percent') {
+                    <mat-icon class="input-icon" matSuffix>percent</mat-icon>
+                  }
+                  @if (form().get([wOption.ruleId, '0'])!.hasError('required')) {
+                    <mat-error>Value is Required</mat-error>
+                  }
+                  @if (form().get([wOption.ruleId, '0'])!.hasError('min')) {
+                    <mat-error>Value must be greater than or equal to 0</mat-error>
+                  }
+                  @if (form().get([wOption.ruleId, '0'])!.hasError('max')) {
+                    <mat-error>Value must be smaller than or equal to {{ units() === 'percent' ? 100 : 1 }}</mat-error>
+                  }
+                </mat-form-field>
+             </div>
+             <div class="form-group ">
+               <label class="field-label">{{ wOption.defaultValues.values[1].value }}</label>
+                <mat-form-field class="input-max-width" appearance="outline">
+                  <!-- <mat-label>{{ wOption.defaultValues.values[1].value }}</mat-label> -->
+               
+                <input  type="number" matInput formControlName="1" min="0" [max]="units() === 'percent' ? 100 : 1">
+                @if (units() === 'percent') {
+                  <mat-icon class="input-icon" matSuffix>percent</mat-icon>
+                }
+                @if (form().get([wOption.ruleId, '1'])!.hasError('required')) {
+                  <mat-error>Value is Required</mat-error>
+                }
+                @if (form().get([wOption.ruleId, '1'])!.hasError('min')) {
+                  <mat-error>Value must be greater than or equal to 0</mat-error>
+                }
+                @if (form().get([wOption.ruleId, '1'])!.hasError('max')) {
+                  <mat-error>Value must be smaller than or equal to {{ units() === 'percent' ? 100 : 1 }}</mat-error>
+                }
+              </mat-form-field>
+
+             </div>
+      
+            
+            <button matButton="outlined" class="margin-left-lg" (click)="onRestoreDefaults(wOption.ruleId)">
+              Restore Defaults
+            </button>
+          </div>
+        </div>
+
+      } @else {
+        <!-- Multiple values case -->
+         <div class="form-heading">
+            <h2>{{ wOption.label }} </h2>
+          
+            @if (wOption.tooltip) {
+              <mat-icon [matTooltip]="wOption.tooltip" class="margin-left-md tooltip-icon">info</mat-icon>
+            }
+            @for(tag of wOption.tags; track tag){
+              <div class="tag is-light is-rounded form-tag">{{ tag | chipsStr }}</div>
+            }
+         </div>
+     
+        <div class="description">{{ wOption.description }}</div>
+        <div class="muti-input-controls"
+             [ngClass]="{
+               'row-layout': wOption.defaultValues.values.length <= 4,
+               'column-layout': wOption.defaultValues.values.length > 4
+             }">
+          @for (value of wOption.defaultValues.values; track i; let i = $index) {
+            <div class="form-group flex-row gap-2 justify-content-between" [formGroupName]="i.toString()">
+              <label for="{{i.toString()}}" class="field-label">{{ value.value }}</label>
+              <div class="input-group d-flex gap-2 align-items-start">
+                  <mat-form-field appearance="outline" class="input-max-width">
+                  
+                    <input id="{{i.toString()}}" type="text" matInput [formControlName]="i.toString()"
+                          min="0" [max]="units() === 'percent' ? 100 : 1"
+                          (focus)="onFocus(form().get([wOption.ruleId, i, i])!.value!)"
+                          (blur)="onBlur(wOption, i)"
+                          (keyup.enter)="calculateWeights(wOption, i)">
+                    @if (units() === 'percent') {
+                      <mat-icon class="input-icon" matSuffix>percent</mat-icon>
+                    }
+                    @if (form().get([wOption.ruleId, i, i])!.hasError('required')) {
+                      <mat-error>Value is Required</mat-error>
+                    }
+                    @if (form().get([wOption.ruleId, i, i])!.hasError('min')) {
+                      <mat-error>Value must be between 0 and 1</mat-error>
+                    }
+                    @if (form().get([wOption.ruleId, i, i])!.hasError('max')) {
+                      <mat-error>Value must be between 0 and 1</mat-error>
+                    }
+                  </mat-form-field>
+                  <div class="lock-container">
+                        <mat-checkbox class="hidden" [formControlName]="i.toString() + '_lock'"></mat-checkbox>
+                  @if (form().get([wOption.ruleId, i, i.toString() + '_lock'])?.value) {
+                    <mat-icon class="lock-icon" (click)="onToggleCheckbox(form(), wOption, i);"
+                              matTooltip="Unlock input for editing">
+                      lock
+                    </mat-icon>
+                  } @else {
+                    <mat-icon class="lock-icon" (click)="onToggleCheckbox(form(), wOption, i);"
+                              matTooltip="Lock input for editing">
+                      lock_open
+                    </mat-icon>
+                  }
+                  </div>
+              </div> 
+            
+            </div>
+          }
+        </div>
+
+        <div class="col">
+          <button matButton="outlined" type="button" (click)="onRestoreDefaults(wOption.ruleId)">
+            Restore Defaults
+          </button>
+        </div>
+      }
+    }
+  </div>
+</form>

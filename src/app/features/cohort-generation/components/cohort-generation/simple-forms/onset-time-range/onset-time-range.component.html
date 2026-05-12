@@ -1,0 +1,50 @@
+<form [formGroup]="form()">
+
+
+  <div class="form-group">
+    <div class="segmented-wrapper">
+      <ng-container formGroupName='onsetPlus'>
+        <div class="field-addon">Onset</div>
+        <div class="field-addon border-left">Plus (+)</div>
+
+
+        <mat-form-field class="narrow-input">
+          <input type="number" matInput formControlName="value" [min]="0" placeholder="0">
+        </mat-form-field>
+
+        <mat-form-field class="unit-select">
+          <mat-select formControlName="unit">
+            @for (unit of TIME_PERIOD_UNIT_LIST; track unit) {
+              <mat-option [value]="unit.value">{{ unit.display }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </ng-container>
+
+
+      <div class="field-addon border-left">
+        Repeat
+        <mat-checkbox formControlName="repeat"></mat-checkbox>
+      </div>
+
+
+      <ng-container formGroupName='every'>
+        <div class="field-addon">Every</div>
+
+        <mat-form-field class="narrow-input">
+          <input type="number" matInput formControlName="value" placeholder="0" [min]="0">
+        </mat-form-field>
+
+        <mat-form-field class="unit-select">
+          <mat-select formControlName="unit">
+            @for (unit of TIME_PERIOD_UNIT_LIST; track unit) {
+              <mat-option [value]="unit.value">{{ unit.display }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </ng-container>
+
+    </div>
+  </div>
+
+</form>
