@@ -1,0 +1,60 @@
+name: Trigger auto deployment for containerapps
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches:
+      - main
+      - Devops
+
+
+  # Allow mannually trigger
+  workflow_dispatch:
+jobs:
+    
+    Build-Prd:
+        runs-on:
+          group: edav-devops-linux-prd
+        environment: Prd
+        
+
+        steps:
+        # checkout the repo
+        - name: 'Checkout GitHub Action'
+          uses: actions/checkout@main
+
+        - name: 'Login via Azure CLI'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: Login into Azure Container Registry
+          shell: bash
+          run: |
+            az acr login --name edavdmzacrinternal
+
+        - name: Build and push image
+          shell: bash
+          run: |
+            docker build -f "Dockerfile" -t "${{ vars.REGISTRY_LOGIN_SERVER }}/cohgent-frontend:${{ github.sha }}"  .
+            docker push "${{ vars.REGISTRY_LOGIN_SERVER }}/cohgent-frontend:${{ github.sha }}"
+
+    deploy-Prd:
+      runs-on:
+        group: edav-devops
+      needs: 'build-and-deploy'
+      
+      environment: Prd
+      steps:
+
+        - name: 'Login via Azure CLI'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+        - name: ACA Deployment
+          shell: pwsh
+          working-directory: "${{ github.workspace }}"
+          run: |-
+                az account set --subscription "${{ vars.ACR_SUBSCRIPTION_ID }}"
+                az containerapp update -n "${{ vars.ACA_NAME }}"  -g "${{ vars.ResourceGroup_name }}" --image "${{ vars.REGISTRY_LOGIN_SERVER }}/cohgent-frontend:${{ github.sha }}" 

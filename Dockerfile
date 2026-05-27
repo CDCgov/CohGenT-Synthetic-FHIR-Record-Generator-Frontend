@@ -1,4 +1,4 @@
-FROM node:22.16.0-alpine AS build
+FROM imagehub.cdc.gov:7000/node:22.16.0-alpine AS build
 WORKDIR /app
 
 # Copy package files first for better layer caching
