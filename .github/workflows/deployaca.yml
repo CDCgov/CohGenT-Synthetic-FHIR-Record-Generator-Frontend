@@ -43,7 +43,7 @@ jobs:
     deploy-Prd:
       runs-on:
         group: edav-devops
-      needs: 'build-and-deploy'
+      needs: 'Build-Prd'
       
       environment: Prd
       steps:
