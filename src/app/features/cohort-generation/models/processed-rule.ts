@@ -1,5 +1,5 @@
-
 import {Concept} from './cohort-generation-request-body';
+import {Medication} from './medication';
 
 export interface ProcessedRule {
   stepOrder: number;

@@ -23,11 +23,20 @@
     border-radius:2em;
     background: #9F9FA9;
   }
-}
 
-.selected{
-  border-radius: 8px;
-  background: #E5E7EB;
+  &.disabled {
+    opacity: 0.5;
+    color: #6B7280;
+
+    .step-number {
+      background: #D1D5DB;
+    }
+  }
+  &.selected{
+    border-radius: 8px;
+    background: #E5E7EB;
+  }
+
 }
 
 .step-menu{
@@ -35,6 +44,7 @@
   flex-direction: column;
   gap: 4px;
 }
+
 .error-icon{
   color: var(--red-600);
   fill: var(--red-600);

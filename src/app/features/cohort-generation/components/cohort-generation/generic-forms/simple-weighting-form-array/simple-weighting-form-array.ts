@@ -40,22 +40,45 @@ export class SimpleWeightingFormArray implements OnDestroy {
   }
 
   onBlur(index: number) {
-    this.calculateWeights(index);
+    const fg = this.formArray().get([index]) as FormGroup;
+    const weightControl = fg.get(['weight']);
+
+    // If control is invalid on blur, reset to the stored value
+    if (weightControl?.invalid && this.weighingInputGlobalStorage !== null) {
+      weightControl.setValue(this.weighingInputGlobalStorage, {emitEvent: false});
+    } else {
+      this.calculateWeights(index);
+    }
+
     this.weighingInputGlobalStorage = null;
   }
 
   calculateWeights(index: number) {
     this.formArray().updateValueAndValidity();
-    if(!this.formArray().valid){
-      console.warn("Invalid form array, cannot calculate weights!");
-      return;
-    }
     const fg = this.formArray().get([index]) as FormGroup;
-    if (!fg?.dirty || this.weighingInputGlobalStorage == null) {
+
+    const weightControl = fg.get(['weight']);
+    let newValue = Number(fg.get(['weight'])!.value);
+
+    // If NaN (invalid string input), treat as 0
+    if (isNaN(newValue)) {
+      newValue = 0;
+      weightControl?.setValue(0, {emitEvent: false});
+    }
+
+    // If the control is still invalid after NaN handling, don't proceed
+    if (weightControl?.invalid) {
       return;
     }
-    const previousValue = this.weighingInputGlobalStorage;
-    const newValue = fg.get(['weight'])!.value;
+
+    // If no stored value (e.g., direct typing without focus), use current value as previous
+    const previousValue = this.weighingInputGlobalStorage ?? newValue;
+
+    // If previous and new are the same, no calculation needed
+    if (previousValue === newValue) {
+      this.weighingInputGlobalStorage = null;
+      return;
+    }
 
     const multiplicationFactor = this.units() == 'percent' ? 1 : 100;
     const inputValues = this.formArray().controls.map((control, i) => {
@@ -72,9 +95,14 @@ export class SimpleWeightingFormArray implements OnDestroy {
     const result = this.weightingHelperService.getAdjustedWeights(inputValues, index, newValue);
     this.formArray().controls.forEach((control, i) => {
       if (!control.controls['lock'].getRawValue()) {
-        control.controls['weight'].setValue(result[i].value, {emitEvent: false});
+        // Round to 1 decimal place to match medication weights behavior
+        const roundedValue = Math.round(result[i].value * 10) / 10;
+        control.controls['weight'].setValue(roundedValue, {emitEvent: false});
       }
     });
+
+    // Clear the storage to prevent recalculation on blur
+    this.weighingInputGlobalStorage = null;
   }
 
   onDelete(index: number) {

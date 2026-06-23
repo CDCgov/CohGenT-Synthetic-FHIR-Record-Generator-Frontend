@@ -34,6 +34,15 @@ export interface WeightingOption extends BaseOption {
   negativesAllowed?: never;
 }
 
+export interface TribalAffiliationOption extends BaseOption {
+  control: "tribal-affiliation";
+  defaultValues: { prevalence : number};
+  minMax: never;
+  decimalSpacesAllowed?: boolean;
+  negativesAllowed?: boolean;
+  values?: never;
+}
+
 export interface RangeOption extends BaseOption {
   control: "range";
   defaultValues: [number, number];
@@ -91,6 +100,15 @@ export interface OtherOption extends BaseOption {
   negativesAllowed?: unknown;
 }
 
+export interface PrevalenceOption extends BaseOption {
+  control: "prevalence";
+  defaultValues: number;
+  minMax?: never;
+  decimalSpacesAllowed?: never;
+  negativesAllowed?: never;
+  values?: never;
+}
+
 // Union type for all options (this replaces your Option interface)
 export type Option =
   | WeightingOption
@@ -99,6 +117,8 @@ export type Option =
   | ConceptOption
   | LocationOption
   | RelativeTimeRangeOption
+  | TribalAffiliationOption
+  | PrevalenceOption
   | OtherOption;
 
 export interface FormRule {

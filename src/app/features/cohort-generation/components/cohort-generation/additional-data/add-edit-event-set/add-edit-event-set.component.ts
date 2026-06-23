@@ -1,26 +1,30 @@
-import {AfterViewChecked, Component, computed, ElementRef, inject, input, output, ViewChild} from '@angular/core';
 import {
-  AbstractControl,
+  AfterViewChecked,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  output,
+  signal,
+  ViewChild
+} from '@angular/core';
+import {
   FormArray,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import {MatButton, MatMiniFabButton} from '@angular/material/button';
+import {MatButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
-import {MatError, MatFormField, MatInput, MatLabel} from "@angular/material/input";
-import {MatOption, MatSelect} from '@angular/material/select';
-import {ConceptFormComponent} from '../../simple-forms/concept-form/concept-form.component';
+import {ConceptFormComponent} from '../../generic-forms/concept-form/concept-form.component';
 import {MatCardModule} from '@angular/material/card';
 import {AdditionalDataHelperService} from '../../../../services/form-helpers/additional-data-helper.service';
 import {TIME_PERIOD_UNIT_LIST} from '../../../../../../constants/app-constants';
 import {UI_CONSTANTS} from '../../../../../../constants/ui-constants';
-import {OnsetTimeRangeComponent} from '../../simple-forms/onset-time-range/onset-time-range.component';
+import {OnsetTimeRangeComponent} from '../../generic-forms/onset-time-range/onset-time-range.component';
 import {AsFormGroupPipe} from '../../../../../../shared/pipes/as-form-group-pipe';
-import {SimpleWeightingFormArray} from '../../simple-forms/simple-weighting-form-array/simple-weighting-form-array';
-import {PresetLabObservationValue} from '../../../../services/preset-lab-observation-values.service';
 import {MatDivider} from '@angular/material/list';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {MatTooltip} from '@angular/material/tooltip';
 import {Utils} from '../../../../services/utils.service';
@@ -30,10 +34,9 @@ import {
   MatExpansionPanelHeader,
   MatExpansionPanelTitle
 } from '@angular/material/expansion';
-import {UNITS_OF_MEASURE} from '../../../../../../constants/units_of_measure';
-import {MatAutocomplete, MatAutocompleteTrigger} from '@angular/material/autocomplete';
-import {AsyncPipe} from '@angular/common';
-import {map, Observable, startWith} from 'rxjs';
+import {Procedures} from './procedures/procedures';
+import {RadiologyReports} from './radiology-reports/radiology-reports';
+import {Observations} from './observations/observations';
 
 
 @Component({
@@ -43,32 +46,23 @@ import {map, Observable, startWith} from 'rxjs';
     FormsModule,
     MatButton,
     MatCardModule,
-    MatFormField,
     MatIcon,
-    MatMiniFabButton,
-    MatInput,
-    MatLabel,
-    MatOption,
-    MatSelect,
     ReactiveFormsModule,
     OnsetTimeRangeComponent,
     AsFormGroupPipe,
-    SimpleWeightingFormArray,
     MatDivider,
-    MatProgressSpinner,
     MatCheckbox,
     MatTooltip,
-    MatError,
     MatAccordion,
     MatExpansionPanel,
     MatExpansionPanelHeader,
     MatExpansionPanelTitle,
-    MatAutocomplete,
-    MatAutocompleteTrigger,
-    AsyncPipe,
+    Procedures,
+    RadiologyReports,
+    Observations,
   ],
   templateUrl: './add-edit-event-set.component.html',
-  styleUrl: './add-edit-event-set.component.scss'
+  styleUrl: './add-edit-event-set.component.scss',
 })
 export class AddEditEventSetComponent implements AfterViewChecked {
   @ViewChild('proceduresContainer') proceduresContainer?: ElementRef;
@@ -76,9 +70,12 @@ export class AddEditEventSetComponent implements AfterViewChecked {
   @ViewChild('labObservationsContainer') labObservationsContainer?: ElementRef;
 
   additionalDataFg = input.required<FormGroup>();
-  index = input<number>(0);
+  tempFormValueStorage = input<any>();
+  protected readonly Number = Number;
+  utils= inject(Utils)
 
   additionalDataHelperSeries = inject(AdditionalDataHelperService);
+
 
   private shouldScrollToProcedures = false;
   private shouldScrollToRadiology = false;
@@ -108,17 +105,10 @@ export class AddEditEventSetComponent implements AfterViewChecked {
   protected readonly FormGroup = FormGroup;
   protected readonly TIME_PERIOD_UNIT_LIST = TIME_PERIOD_UNIT_LIST;
   readonly UI_CONSTANTS = UI_CONSTANTS.COHORT_GENERATION.ADDITIONAL_DATA;
-  private utilsService = inject(Utils);
-  protected readonly unitsOfMeasure = UNITS_OF_MEASURE;
-  protected filteredUnitsMap = new Map<string, Observable<typeof UNITS_OF_MEASURE>>();
-
+  currentActiveFormGroupTracker = signal<string | null>(null);
 
   getFormArrayByName(fg: any, nameOrPath: string | string[]) {
     return fg.get(nameOrPath) as FormArray;
-  }
-
-  isFormGroup(control: AbstractControl): control is FormGroup {
-    return control instanceof FormGroup;
   }
 
   ngAfterViewChecked(): void {
@@ -139,16 +129,19 @@ export class AddEditEventSetComponent implements AfterViewChecked {
   addProcedure(additionalDataFg: FormGroup) {
     this.additionalDataHelperSeries.addProcedure(additionalDataFg);
     this.shouldScrollToProcedures = true;
+    this.currentActiveFormGroupTracker.set('procedure');
   }
 
   addRadiologyReport(additionalDataFg: FormGroup) {
     this.additionalDataHelperSeries.addRadiologyReport(additionalDataFg);
     this.shouldScrollToRadiology = true;
+    this.currentActiveFormGroupTracker.set('radiology');
   }
 
   addObservation(additionalDataFg: FormGroup) {
     this.additionalDataHelperSeries.addObservation(additionalDataFg);
     this.shouldScrollToLabObservations = true;
+    this.currentActiveFormGroupTracker.set('observation');
   }
 
   onDeleteEventDataItem(index: number, additionalDataFg: FormGroup, name: string) {
@@ -159,43 +152,66 @@ export class AddEditEventSetComponent implements AfterViewChecked {
     return fg.get(path) as FormArray;
   }
 
-  addValue(labObservationFg: FormGroup, type: string) {
-    this.additionalDataHelperSeries.addValueFg(labObservationFg.get(['value', 'valueArray']) as FormArray, type);
+  onCancelEventSetEdit(){
+    if(this.currentActiveFormGroupTracker() == 'observation'){
+      const labObservationsFgArray = this.additionalDataFg().get('labObservations') as FormArray;
+      this.removeControlsMarkedForDeletion(labObservationsFgArray);
+    }
+    else if(this.currentActiveFormGroupTracker() == 'radiology'){
+      const radiologyFgArray = this.additionalDataFg().get('radiologyList') as FormArray;
+      this.removeControlsMarkedForDeletion(radiologyFgArray);
+    }
+    else if(this.currentActiveFormGroupTracker() == 'procedure'){
+      const proceduresFgArray = this.additionalDataFg().get('procedures') as FormArray;
+      this.removeControlsMarkedForDeletion(proceduresFgArray);
+    }
+    this.additionalDataFg().patchValue(this.tempFormValueStorage(), {emitEvent: false});
+    this.currentActiveFormGroupTracker.set(null);
+    this.onCancel.emit();
   }
 
-  onPresetSelected(labObservationFg: FormGroup, selectedPreset: PresetLabObservationValue | null) {
-    this.additionalDataHelperSeries.onPresetSelected(labObservationFg, selectedPreset);
+  private removeControlsMarkedForDeletion(formArray: FormArray): void {
+    if (!formArray || formArray.length === 0) {
+      return;
+    }
+
+    // Keep controls where deleteOnCancel is NOT true
+    const controlsToKeep = formArray.controls.filter(
+      control => !control.get('deleteOnCancel')?.value
+    );
+
+    formArray.clear();
+    controlsToKeep.forEach(control => formArray.push(control));
+
   }
 
-  onSaveEvent() {
-    this.utilsService.markFormGroupTouched(this.additionalDataFg());
+  onSaveEventSet() {
+    this.utils.markFormGroupTouched(this.additionalDataFg());
     this.additionalDataFg().updateValueAndValidity();
     if (this.additionalDataFg().valid) {
+      if (this.currentActiveFormGroupTracker() == 'observation') {
+        const labObservationsArray = this.additionalDataFg().get('labObservations') as FormArray;
+        labObservationsArray.controls.forEach(control => {
+          control.get('deleteOnCancel')?.patchValue(false, { emitEvent: false });
+        });
+      }
+      if (this.currentActiveFormGroupTracker() == 'radiology') {
+        const radiologyFgArray = this.additionalDataFg().get('radiologyList') as FormArray;
+        radiologyFgArray.controls.forEach(control => {
+          control.get('deleteOnCancel')?.patchValue(false, { emitEvent: false });
+        });
+      }
+      if (this.currentActiveFormGroupTracker() == 'procedure') {
+        const proceduresFgArray = this.additionalDataFg().get('procedures') as FormArray;
+        proceduresFgArray.controls.forEach(control => {
+          control.get('deleteOnCancel')?.patchValue(false, { emitEvent: false });
+        });
+      }
+      this.currentActiveFormGroupTracker.set(null);
       this.onSave.emit();
     }
   }
 
-  getFilteredUnits(quantityFg: FormGroup): Observable<typeof UNITS_OF_MEASURE> {
-    // Use the form group instance as the key instead of its value
-    if (!this.filteredUnitsMap.has(quantityFg as any)) {
-      const unitControl = quantityFg.get('unit');
-      if (unitControl) {
-        const filtered$ = unitControl.valueChanges.pipe(
-          startWith(unitControl.value || ''),
-          map(value => this._filterUnits(value || ''))
-        );
-        this.filteredUnitsMap.set(quantityFg as any, filtered$);
-      }
-    }
-    return this.filteredUnitsMap.get(quantityFg as any)!;
-  }
-
-  private _filterUnits(value: string): typeof UNITS_OF_MEASURE {
-    const filterValue = value.toLowerCase();
-    return this.unitsOfMeasure.filter(unit =>
-      unit.Display.toLowerCase().startsWith(filterValue)
-    );
-  }
 
   private scrollToContainer(container: ElementRef): void {
     if (container) {
@@ -203,4 +219,6 @@ export class AddEditEventSetComponent implements AfterViewChecked {
       element.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }
+
+
 }

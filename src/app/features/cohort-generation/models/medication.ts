@@ -1,4 +1,4 @@
-interface Medication {
+export interface Medication {
   concept?: {
     display: string;
     system: string;

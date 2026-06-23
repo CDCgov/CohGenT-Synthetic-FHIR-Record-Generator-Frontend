@@ -84,13 +84,24 @@
             </td>
           </ng-container>
 
+          <!-- Has Presets Column -->
+
+            <ng-container matColumnDef="hasPresets">
+              <th mat-header-cell *matHeaderCellDef>Has Presets</th>
+              <td mat-cell *matCellDef="let concept">
+                @if(concept.hasPresets){
+                  <mat-icon class="cursor-pointer" matTooltip="Concept has associated preset value ranges">check</mat-icon>
+                }
+              </td>
+            </ng-container>
+
           <!-- Header Row -->
-          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
 
           <!-- Data Rows -->
           <tr
             mat-row
-            *matRowDef="let row; columns: displayedColumns"
+            *matRowDef="let row; columns: displayedColumns()"
             (click)="onSelect(row)"
             class="clickable-row compact-row"
             [title]="'Click to select: ' + row.display"

@@ -8,23 +8,23 @@ export class GenerateCohortHelperService {
   private fb = inject(FormBuilder);
 
   readonly bundleTypes = [
-    {display: "Transaction", value: "transaction" }
+    {display: "Transaction", value: "transaction"}
   ]
 
   readonly outputFormats = [
-    {display: "FHIR JSON Bundle", value: "json" },
+    {display: "FHIR JSON Bundle", value: "json"},
     {display: "Bulk FHIR NDJSON", value: "ndjson"}
   ]
 
-  buildFg(value?: any): FormGroup{
+  buildFg(value?: any): FormGroup {
     const numberOfPatientsFg = this.buildNumberOfPatientsFg()
-    const fg =  new FormGroup({
+    const fg = new FormGroup({
       seed: new FormControl(this.generateRandom10DigitNumber(), [Validators.required, Validators.min(0), Validators.max(9999999999)]),
       numberOfPatients: numberOfPatientsFg,
       bundleType: new FormControl(this.bundleTypes[0].value),
       outputFormat: new FormControl(this.outputFormats[0].value),
     });
-    if (value){
+    if (value) {
       fg.patchValue(value);
     }
     return fg;
@@ -43,13 +43,36 @@ export class GenerateCohortHelperService {
   private buildNumberOfPatientsFg() {
     let fg = this.fb.group({
       'slider': new FormControl(1),
-      'input': new FormControl(1, [Validators.required,  Validators.min(1), Validators.max(50)]),
+      'input': new FormControl(1, [Validators.required, Validators.min(1), Validators.max(50)]),
     });
     fg.controls['slider'].valueChanges.subscribe(value => {
-      fg.controls['input'].setValue(value, { emitEvent: false });
+      fg.controls['input'].setValue(value);
     });
-    fg.controls['input'].valueChanges.subscribe(value => {
-      fg.controls['slider'].setValue(value, { emitEvent: false });
+
+
+    fg.controls['input'].valueChanges.subscribe((value: string | number) => {
+      //Special case fro empty value case for
+      if (value == '') {
+        fg.controls['input'].setValue(null, {emitEvent: false});
+        return;
+      }
+
+      //Handle numbers
+      const numericVal = Number(value);
+      if (Number.isNaN(numericVal)) {
+        fg.controls['input'].setValue(null, {emitEvent: false});
+        fg.controls['slider'].setValue(1, {emitEvent: false});
+      } else if (numericVal == 0) {
+        const minValue = 1;
+        fg.controls['input'].setValue(minValue, {emitEvent: false});
+        fg.controls['slider'].setValue(minValue, {emitEvent: false});
+      } else if (numericVal > 50) {
+        const maxValue = 50;
+        fg.controls['input'].setValue(maxValue, {emitEvent: false});
+        fg.controls['slider'].setValue(maxValue, {emitEvent: false});
+      } else {
+        fg.controls['slider'].setValue(numericVal, {emitEvent: false});
+      }
     });
     return fg;
   }

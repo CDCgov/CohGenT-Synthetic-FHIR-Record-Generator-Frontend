@@ -8,6 +8,7 @@ import {
   MatTable,
   MatTableDataSource
 } from '@angular/material/table';
+import {Medication} from '../../../../models/medication';
 
 @Component({
   selector: 'app-medications-review',

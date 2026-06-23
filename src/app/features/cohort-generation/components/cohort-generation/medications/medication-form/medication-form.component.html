@@ -1,6 +1,12 @@
-<div [formGroup]="medicationForm()" class="border p-4 rounded-2 mt-2">
+<div [formGroup]="medicationForm()" class="panel mb-3">
   <div class="d-flex align-items-start gap-3 mb-3">
     <div class="flex-grow-1">
+      <div class="panel-header">
+        Medication Concept
+          <div class="tag is-rounded form-tag required is-danger is-light margin-left-sm">
+            Required
+          </div>
+      </div>
       <app-concept-form
         [formFieldHints]="MEDICATIONS_CONST.CONCEPT_HINTS"
         [form]="medicationForm()"
@@ -17,12 +23,15 @@
     </div>
   </div>
 
-  <div class="form-group">
+  <div class="form-group margin-top-lg">
     <label class="field-label" for="dosage-{{index()}}">
       <div>Dosage Instructions</div>
       <div class="tag is-rounded form-tag is-white margin-left-sm">{{ 'optional' | chipsStr }}</div>
     </label>
-    <mat-form-field appearance="outline" class="w-full margin-top-md">
+    <div class="margin-top-sm">
+      <div class="description margin-top-sm">{{ MEDICATIONS_CONST.DOSAGE_INSTRUCTIONS }}</div>
+    </div>
+    <mat-form-field appearance="outline" class="w-full margin-top-sm">
       <input id="dosage-{{index()}}" type="text" matInput formControlName="dosage">
     </mat-form-field>
   </div>

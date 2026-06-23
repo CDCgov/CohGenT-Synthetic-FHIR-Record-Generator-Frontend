@@ -10,6 +10,8 @@ import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/
 import {ConceptSearchService} from '../../../../services/concept-search-service';
 import {Concept} from '../../../../models/cohort-generation-request-body';
 import {finalize} from 'rxjs/operators';
+import {MatIcon} from '@angular/material/icon';
+import {MatTooltip} from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-concept-search',
@@ -24,7 +26,9 @@ import {finalize} from 'rxjs/operators';
     MatSelect,
     ReactiveFormsModule,
     MatTableModule,
-    MatHint
+    MatHint,
+    MatIcon,
+    MatTooltip
   ],
   templateUrl: './concept-search.html',
   styleUrl: './concept-search.scss',
@@ -33,9 +37,22 @@ export class ConceptSearch implements OnInit {
   systemList = input.required<{ label: string; uri: string | null }[]>();
   searchTermHint = input<string>('');
   selectedSystem = input<{ label: string; uri: string | null }>(null);
+  hasPresetsRendered = input<boolean>(false);
+
   dropdownSystemList = computed(() =>
     this.systemList().filter(system => system.label !== 'Other')
   );
+
+  defaultColumns = ['code', 'display', 'system'];
+  displayedColumns= computed(() => {
+    if(this.hasPresetsRendered()){
+      return [... this.defaultColumns, 'hasPresets']
+    }
+    else {
+      return [... this.defaultColumns];
+    }
+  });
+
 
   onSelectConcept = output<Concept>();
 
@@ -49,7 +66,6 @@ export class ConceptSearch implements OnInit {
   readonly formSubmitted = signal(false); // Track form submission
 
   readonly dataSource = new MatTableDataSource<Concept>([]);
-  readonly displayedColumns = ['code', 'display', 'system'] as const;
 
   totalRecords = 0;
   pageSize = 10;

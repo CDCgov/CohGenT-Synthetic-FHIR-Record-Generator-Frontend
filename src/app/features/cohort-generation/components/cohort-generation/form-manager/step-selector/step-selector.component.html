@@ -1,10 +1,18 @@
-<div class="step-menu">
-@for (formRule of formRules(); track formRule; let index = $index) {
-  <div class="menu-item" [ngClass]="{'selected': index === selectedRuleIndex()}"
-       (click)="onFormRuleSelected(index)"><span class="step-number">{{ index + 1 }}</span> {{ formRule.title | ruleTitle : formRule.type}}
-    @if (!form().get([`step_${index}`])?.valid && form().get([`step_${index}`])?.touched) {
-      <mat-icon class="error-icon">error</mat-icon>
-    }
-  </div>
-}
+<div class="step-menu"
+     [matTooltip]="menuDisabledMessage()"
+     [matTooltipDisabled]="!disabled()">
+  @for (formRule of formRules(); track formRule; let index = $index) {
+    <div class="menu-item"
+         [ngClass]="{
+         'selected': index === selectedRuleIndex(),
+         'disabled': disabled()
+       }"
+         (click)="onFormRuleSelected(index)">
+      <span class="step-number">{{ index + 1 }}</span>
+      {{ formRule.title | ruleTitle : formRule.type }}
+      @if (!form().get([`step_${index}`])?.valid && form().get([`step_${index}`])?.touched) {
+        <mat-icon class="error-icon">error</mat-icon>
+      }
+    </div>
+  }
 </div>

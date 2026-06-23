@@ -1,5 +1,5 @@
 import {CategoryTuple, Option, UseCase} from './use-case';
-import {FormControl, FormGroup} from '@angular/forms';
+import {FormArray, FormControl, FormGroup} from '@angular/forms';
 import {UseCaseMetadata} from './use-case-metadata';
 import {toDays} from '../../../shared/functions/time-to-days-conversion.function';
 import {Utils} from '../services/utils.service';
@@ -20,8 +20,13 @@ export interface Concept {
   system: string;
   systemUri?: string;
   code: string;
+  hasPresets?: boolean;
 }
 
+export interface MedicationSet{
+  weight: number;
+  medications: Medication[];
+}
 
 export interface Medication {
   dosage: string;
@@ -34,7 +39,7 @@ export class CohortGenerationRequestBody {
   userResponses: UserResponse[];
   seed: number;
   eventPeriod: EventPeriod;
-  medications?: Medication[];
+  medicationSets?: MedicationSet[];
   eventSets?: any[];
   outputFormat: string;
 
@@ -55,7 +60,8 @@ export class CohortGenerationRequestBody {
       Object.keys(form.controls).forEach((key) => {
         const stepFg = form.controls[key];
         if (stepFg.controls['medication'] && formRule.type === "medication") {
-          this.medications = this.getMedications(stepFg.get(['medication']));
+          this.medicationSets = this.getMedicationSets(stepFg.get(['medication']));
+          // this.medications = this.getMedications(stepFg.get(['medication']));
         } else if (formRule.type === 'custom' && formRule?.options!.length > 0) {
           formRule.options!.forEach(option => {
             Object.keys(stepFg.controls).forEach(key => {
@@ -179,22 +185,58 @@ export class CohortGenerationRequestBody {
         };
         userResponses.push(response);
       }
+      else if(option.control === 'tribal-affiliation'){
+        const fg = formGroup.get(key) as FormGroup;
+        const prevalenceValue = fg.get(['prevalence', 'value'])!.value;
+        const isRandomlyAssigned = fg.controls['isRandomlyAssigned'].value;
+
+        const value: { prevalence: number; affiliationCode?: string } = {
+          prevalence: units === 'percent' ? prevalenceValue / 100 : prevalenceValue
+        };
+
+        // Only include affiliationCode if a specific affiliation is selected
+        if (!isRandomlyAssigned && fg.controls['affiliation'].value) {
+          value.affiliationCode = fg.controls['affiliation'].value.code;
+        }
+
+        const response: UserResponse = {
+          ruleId: option.ruleId,
+          value: value
+        };
+        userResponses.push(response);
+      }
     });
 
     return userResponses;
   }
 
-  getMedications(fg: FormGroup): Medication[] {
-    let medicationList: Medication[] = Object.keys(fg.controls).map(key => {
-      let code = fg.get([key, 'concept', 'code'])!.value;
-      const system = fg.get([key, 'concept', 'systemUri'])!.value || fg.get([key, 'concept', 'system'])!.value;
-      const display = fg.get([key, 'concept', 'display'])!.value;
-      const codeableConcept: Concept = {code: code, system: system, display: display}
 
-      const dosage = fg.get([key, 'dosage'])!.value;
-      return {codeableConcept: codeableConcept, dosage: dosage};
+  private getMedicationSets(fgArray: FormArray): MedicationSet[] {
+    return fgArray.controls.map(fgGroup => {
+      // Get the weight value and convert from percentage to decimal
+      const weight = (fgGroup.get(['weightFg', 'weight'])?.value ?? 0) / 100;
+
+      // Get the medications FormArray from this medication set
+      const medicationsFormArray = fgGroup.get('medications') as FormArray;
+
+      // Convert the medications FormArray to Medication[] using helper method
+      const medications = this.getMedications(medicationsFormArray);
+
+      return { medications, weight };
     });
-    return medicationList;
+  }
+
+  private getMedications(medicationsArray: FormArray): Medication[] {
+    return medicationsArray.controls.map(medicationControl => {
+      const code = medicationControl.get(['concept', 'code'])?.value;
+      const system = medicationControl.get(['concept', 'systemUri'])?.value ||
+                     medicationControl.get(['concept', 'system'])?.value;
+      const display = medicationControl.get(['concept', 'display'])?.value;
+      const dosage = medicationControl.get('dosage')?.value;
+
+      const codeableConcept: Concept = { code, system, display };
+      return { codeableConcept, dosage };
+    });
   }
 
   private getEventSetsData(fg: FormGroup) {
@@ -279,4 +321,5 @@ export class CohortGenerationRequestBody {
     }
     return null;
   }
+
 }

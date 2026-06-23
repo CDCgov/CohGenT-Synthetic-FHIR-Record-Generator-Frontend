@@ -1,5 +1,5 @@
 <div class="dialog-title" mat-dialog-title >
-  {{ fromPreset ? "Select Condition" : "Concept Finder" }}
+  {{ fromPreset ? "Preset Concept List" : "Concept Finder" }}
 </div>
 
 <mat-dialog-content>
@@ -11,8 +11,9 @@
     <app-concept-search
       [systemList]="systemList"
       [searchTermHint]="searchTermHint"
-      (onSelectConcept)="onSelectConcept($event)"
-      [selectedSystem]="selectedSystem">
+      [selectedSystem]="selectedSystem"
+      [hasPresetsRendered]="hasPresetsRendered"
+      (onSelectConcept)="onSelectConcept($event)">
     </app-concept-search>
   }
 </mat-dialog-content>
@@ -23,7 +24,7 @@
   </button>
   @if(!fromPreset){
     <button matButton="filled" class="secondary-btn" (click)="onSelect()">
-      Select
+      Select This Concept
     </button>
   }
 

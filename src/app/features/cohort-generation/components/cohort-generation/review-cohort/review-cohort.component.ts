@@ -2,20 +2,20 @@ import {Component, computed, inject, input, Signal} from '@angular/core';
 import {CategoryTuple, FormRule, Option, WeightingOption} from '../../../models/use-case';
 import {ViewEventSetComponent} from '../additional-data/view-event-set/view-event-set.component';
 import {Concept} from '../../../models/cohort-generation-request-body';
-import {MedicationsReviewComponent} from '../medications/medications-review/medications-review.component';
 import {RuleTitlePipe} from '../../../pipes/rule-title-pipe';
 import {DefaultsSummaryComponent} from '../defaults-summary/defaults-summary';
 import {WeightingHelperService} from '../../../services/form-helpers/weighting-helper.service';
 import {CohortService} from '../../../services/cohort.service';
 import {ProcessedCustomOption, ProcessedRule} from '../../../models/processed-rule';
+import {ViewMedicationSet} from '../medications/view-medication-set/view-medication-set';
 
 @Component({
   selector: 'app-review-cohort',
   imports: [
     ViewEventSetComponent,
-    MedicationsReviewComponent,
     RuleTitlePipe,
     DefaultsSummaryComponent,
+    ViewMedicationSet,
   ],
   templateUrl: './review-cohort.component.html',
   styleUrl: './review-cohort.component.scss'

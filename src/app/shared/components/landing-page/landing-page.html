@@ -2,10 +2,13 @@
   <div class="top-row">
     <div class="description-section">
       <div class="margin-bottom-md">{{ UI_CONSTANTS.DESCRIPTION }}</div>
+      <div class="margin-bottom-sm">How it works:</div>
       @for(str of UI_CONSTANTS.BULLETS; track str){
         <div class="bullet-point">{{ str }}</div>
       }
-      <div>{{ UI_CONSTANTS.PHI_LANGUAGE }}</div>
+      @for(str of UI_CONSTANTS.SUPPORTED_FORMATS; track str){
+        <div class="sub-bullet-point">{{ str }}</div>
+      }
     </div>
     <div class="menu-section">
       <div class="card-container">
@@ -32,7 +35,9 @@
           </mat-card-content>
         </mat-card>
       </div>
+
     </div>
+
   </div>
 
   <div class="samples-section">
@@ -74,4 +79,8 @@
       </mat-expansion-panel>
     </mat-accordion>
   </div>
+
+  <footer class="landing-footer">
+    <div>{{ UI_CONSTANTS.PHI_LANGUAGE }}</div>
+  </footer>
 </div>

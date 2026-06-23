@@ -14,8 +14,8 @@
               </div>
             </div>
 
-            <button matButton="filled" (click)="useConcept(primary)">
-              Use This Concept
+            <button matButton="filled" (click)="onSelectConcept.emit(primary)">
+              Select This Concept
             </button>
           </div>
         }
@@ -43,8 +43,8 @@
                   <div class="code">{{ secondary.code }}</div>
                 </div>
               </div>
-              <button matButton="outlined" (click)="useConcept(secondary)">
-                Use This Concept
+              <button matButton="outlined" (click)="onSelectConcept.emit(secondary)">
+                Select This Concept
               </button>
             </div>
           }

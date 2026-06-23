@@ -14,7 +14,8 @@ export interface DialogData {
   secondaryActionBtnTitle?: string; // Permits the user to exist without executing the primary action. For example Cancel
   isPrimaryButtonLeft?: boolean; // Indicates the position of the primary action. If the primary action is on the left, the default button is the secondary action.
   width?: string;
-  height?: string
+  height?: string;
+  isSecondaryActionDanger?: boolean;
 }
 
 @Component({
@@ -38,7 +39,8 @@ export class ConfirmationDialog {
     secondaryActionBtnTitle: this.dialogData.secondaryActionBtnTitle ?? "No",
     width: this.dialogData.width ?? '4em',
     height: this.dialogData.height ?? '4em',
-    isPrimaryButtonLeft: this.dialogData.isPrimaryButtonLeft ?? false
+    isPrimaryButtonLeft: this.dialogData.isPrimaryButtonLeft ?? false,
+    isSecondaryActionDanger: this.dialogData.isSecondaryActionDanger ?? false
   };
 
   onSecondaryClick(): void {

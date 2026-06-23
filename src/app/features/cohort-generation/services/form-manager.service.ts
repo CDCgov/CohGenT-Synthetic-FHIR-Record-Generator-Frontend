@@ -11,6 +11,7 @@ import {GenerateCohortHelperService} from './form-helpers/generate-cohort-helper
 import {BehaviorSubject} from 'rxjs';
 import {SYSTEM_LIST} from '../../../constants/app-constants';
 import {SharedHttpErrorService} from '../../../shared/services/shared-http-error.service';
+import {TribalAffiliationHelperService} from './form-helpers/tribal-affiliation-helper.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,7 @@ export class FormManagerService {
   private additionalDataHelperService = inject(AdditionalDataHelperService);
   private generateCohortHelperService: GenerateCohortHelperService = inject(GenerateCohortHelperService);
   private sharedHttpErrorService = inject(SharedHttpErrorService);
+  private patientTribalAffiliationHelperService = inject(TribalAffiliationHelperService);
 
   private formTracker = new BehaviorSubject<any>(null);
   formTracker$ = this.formTracker.asObservable();
@@ -52,10 +54,6 @@ export class FormManagerService {
       formRules.forEach((formRule: FormRule, index: number) => {
         this.addStepControl(form, formRule, index, importedValue);
       });
-
-      form.valueChanges.subscribe(value => {
-        this.setFormData(form.getRawValue());
-      });
     } catch (error) {
       this.sharedHttpErrorService.setErrorMessage('Invalid form data. Please check your imported file and try again.');
       this.sharedHttpErrorService.showErrorComponent();
@@ -81,7 +79,7 @@ export class FormManagerService {
       } else if (formRule.type === 'medication') {
         stepControl.addControl(formRule.type, this.fb.array([]));
         if(importedValue?.[`step_${index}`]?.['medication']?.length > 0){
-          this.medicationServiceHelper.importMedications(stepControl.get(['medication']) as FormArray, importedValue?.[`step_${index}`]?.['medication']);
+          this.medicationServiceHelper.importMedicationSets(stepControl.get(['medication']) as FormArray, importedValue?.[`step_${index}`]?.['medication']);
         }
       } else if (formRule.type === 'additional-data-time-series') {
         stepControl.addControl(formRule.type, this.fb.array([]));
@@ -114,8 +112,10 @@ export class FormManagerService {
         form.addControl(option.ruleId, this.weightingHelperService.buildFg(option));
       } else if (option.control === 'range') {
         form.addControl(option.ruleId, this.rangeHelperService.getRangeFg(option));
+      } else if (option.control === 'tribal-affiliation') {
+        form.addControl(option.ruleId, this.patientTribalAffiliationHelperService.getPatientTribalAffiliationFg(option));
       } else if (option.control === 'location') {
-        form.addControl(option.ruleId, this.getLocationFg(option));
+        form.addControl(option.ruleId, this.getLocationFg());
       } else if (option.control === 'concept') {
         if(option.ruleId == 'condition-code'){
           // condition code always has a SNOMED default system
@@ -132,7 +132,7 @@ export class FormManagerService {
     return form;
   }
 
-  private getLocationFg(option: Option):FormGroup {
+  private getLocationFg():FormGroup {
     let fg = this.fb.group({});
     fg.addControl('city', new FormControl());
     fg.addControl('state', new FormControl());

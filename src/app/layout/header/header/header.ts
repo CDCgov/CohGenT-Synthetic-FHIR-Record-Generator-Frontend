@@ -1,5 +1,5 @@
 import {Component, inject, OnInit} from '@angular/core';
-import {MatIconModule} from "@angular/material/icon";
+import {MatIconModule, MatIconRegistry} from "@angular/material/icon";
 import {NavigationStart, Router} from '@angular/router';
 import {ConfigService} from '../../../config/config.service';
 import {MatButtonModule} from '@angular/material/button';
@@ -13,6 +13,8 @@ import {filter} from 'rxjs';
 import {
   opeNotification
 } from '../../../features/cohort-generation/components/cohort-generation/notification-modal/notification-modal';
+import {DomSanitizer} from '@angular/platform-browser';
+import {MatDivider} from '@angular/material/divider';
 
 @Component({
   selector: 'app-header',
@@ -21,6 +23,7 @@ import {
     MatButtonModule,
     MatMenuModule,
     MatTooltip,
+    MatDivider,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss'
@@ -31,6 +34,14 @@ export class Header implements OnInit {
   private dialog: MatDialog = inject(MatDialog);
   cohortService = inject(CohortService);
   formManagerService = inject(FormManagerService);
+  domSanitizer = inject(DomSanitizer);
+  matIconRegistry = inject(MatIconRegistry);
+  constructor() {
+    this.matIconRegistry.addSvgIcon(
+      "github",
+      this.domSanitizer.bypassSecurityTrustResourceUrl("../../assets/svg_icons/github.svg")
+    );
+  }
 
 
   ngOnInit(): void {
@@ -80,6 +91,11 @@ export class Header implements OnInit {
     const subject = 'CohGenT: General Inquiry';
     const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
     window.open(mailtoLink, '_blank');
+  }
+
+  openGithubRepo() {
+    const githubUrl = 'https://github.com/CDCgov/CohGenT-Synthetic-FHIR-Record-Generator-Backend';
+    window.open(githubUrl, '_blank');
   }
 
   onReturnToHome(){
@@ -132,9 +148,8 @@ export class Header implements OnInit {
   }
 
   protected onDocumentation() {
-    opeNotification      (this.dialog,  {
-      message: "User and Technical Documentation will be available via this link soon."
-    }).subscribe()
+    const githubUrl = 'https://github.com/CDCgov/CohGenT-Synthetic-FHIR-Record-Generator-Backend/blob/main/docs/userguide.md';
+    window.open(githubUrl, '_blank');
   }
 
   // Warn users about potential data loss when they attempt to refresh the page or close the browser

@@ -147,6 +147,8 @@ export class WeightingHelperService {
         const changeToMake = changeOfN * relativeDistribution;
         adjustedValue = oldInput.value + changeToMake;
       }
+      // Ensure weight is never negative
+      adjustedValue = Math.max(0, adjustedValue);
       return { lock: false, value: this.roundToDecimalPlaces(adjustedValue, 2) };
     });
 
@@ -161,9 +163,11 @@ export class WeightingHelperService {
       // 4. Adjust that input by adding the entire diff to its value, then round the result to two decimal places. This ensures the overall total becomes exactly 100% after the correction.
       const adjustIdx = newInputs.findIndex((_v, i) => !oldInputs[i].lock && i !== indexToChange);
       if (adjustIdx !== -1) {
+        const correctedValue = newInputs[adjustIdx].value + diff;
+        // Ensure weight is never negative
         newInputs[adjustIdx] = {
           lock: false,
-          value: this.roundToDecimalPlaces(newInputs[adjustIdx].value + diff, 2)
+          value: this.roundToDecimalPlaces(Math.max(0, correctedValue), 2)
         };
       }
     }

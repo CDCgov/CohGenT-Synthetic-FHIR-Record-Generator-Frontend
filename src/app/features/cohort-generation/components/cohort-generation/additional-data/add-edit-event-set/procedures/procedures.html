@@ -1,0 +1,34 @@
+<div class="panel-header mb-4">
+  <h2>Procedure(s)</h2>
+</div>
+<div class="panel-content">
+@for (procedureFg of procedureFormArray().controls; track procedureFg; let i = $index) {
+  @if (isFormGroup(procedureFg)) {
+    <div class="panel margin-bottom-md">
+      <div class="d-flex align-items-start gap-3">
+        <div class="flex-grow-1">
+          <div class="panel-header">
+            Procedure Concept
+            <div class="tag is-rounded form-tag required is-danger is-light margin-left-sm">
+              Required
+            </div>
+          </div>
+          <app-concept-form
+            [form]="procedureFg"
+            [option]="{'label':'', 'control':'other' , 'ruleId': 'procedureConcept'}"
+            [formFieldHints]="UI_CONSTANTS.CONCEPT_HINTS.PROCEDURE"
+            [searchTermHint]="UI_CONSTANTS.SEARCH_TERM_HINTS.PROCEDURE_CONCEPT"
+          ></app-concept-form>
+        </div>
+        <div class="flex-shrink-0">
+          <button matMiniFab aria-label="Delete Procedures"
+                  type="button" matTooltip="Delete Procedure" class="btn-danger outlined-fab"
+                  (click)="onDeleteProcedure.emit(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}
+</div>
