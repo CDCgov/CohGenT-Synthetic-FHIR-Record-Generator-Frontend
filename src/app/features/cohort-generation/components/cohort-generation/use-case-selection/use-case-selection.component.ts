@@ -13,6 +13,7 @@ import {CohortService} from '../../../services/cohort.service';
 import {UI_CONSTANTS} from '../../../../../constants/ui-constants';
 import {MatIcon} from '@angular/material/icon';
 import {MatCardModule} from '@angular/material/card';
+import {MatTooltip} from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-use-case-selection',
@@ -29,6 +30,7 @@ import {MatCardModule} from '@angular/material/card';
     MatButton,
     MatIcon,
     DatePipe,
+    MatTooltip,
   ],
   templateUrl: './use-case-selection.component.html',
   styleUrls: ['./use-case-selection.component.scss', '../cohort-generation.component.scss'],

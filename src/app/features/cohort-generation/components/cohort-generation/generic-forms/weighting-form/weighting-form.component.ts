@@ -98,7 +98,7 @@ export class WeightingFormComponent implements OnDestroy{
     const formGroup = this.form().get(option.ruleId) as FormGroup;
     const previousValue = this.weighingInputGlobalStorage;
     const currentValue = this.form().get([option.ruleId, i, i])!.value;
-    if (formGroup.valid && this.weighingInputGlobalStorage != currentValue) {
+    if (this.weighingInputGlobalStorage != currentValue) {
       this.setWeights(previousValue || 0, currentValue, i, formGroup)
     }
   }

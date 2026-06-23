@@ -26,7 +26,7 @@ export class SamplesService {
         map((response: any) =>
           response.map((el: any) => ({
             ...el,
-            data: JSON.parse(el.data) as CohortData
+            data: el.data as CohortData
           }))
         ),
         catchError(error => {

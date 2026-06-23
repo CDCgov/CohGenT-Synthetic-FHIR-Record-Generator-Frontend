@@ -1,0 +1,39 @@
+@use '@angular/material' as mat;
+
+:host {
+  @include mat.form-field-overrides((
+    container-height: 30px,
+    container-vertical-padding: 4px,
+    filled-with-label-container-padding-top: 4px,
+    filled-with-label-container-padding-bottom: 4px,
+  ));
+}
+
+.weight-container {
+  margin-left: auto;
+  margin-bottom: 4px;
+  border: 1px solid #95BEF4;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #F4F9FE;
+  color: #1662C6
+}
+
+.weight-display {
+  margin-left: auto;
+}
+
+.weight-label {
+  margin-right: 8px;
+  font-weight: 400;
+  //font-size: 12px;
+}
+
+.weight-input {
+  margin-bottom: -20px;
+}
+
+.lock-icon {
+  cursor: pointer;
+  color: var(--zinc-500);
+}

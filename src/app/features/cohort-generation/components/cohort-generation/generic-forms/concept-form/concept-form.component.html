@@ -30,7 +30,7 @@
         <button matButton="outlined" class="secondary-btn" aria-label="Search for Concept" type="button"
                 (click)="onSearchConcept(false)">
           <mat-icon>search</mat-icon>
-          Open Search Concept
+          Open Concept Finder
         </button>
       </div>
     </mat-tab>
@@ -56,7 +56,7 @@
     <mat-tab label="Enter Concept Manually" id="enterConceptManually">
       <div class="margin-top-lg">
         <div class="description">
-          Select the concept's system and enter in the code and display. At least either code or display is required.
+          Select the concept's system and enter in the code and display. <span class="bold-text">At least either code or display is required</span>.
         </div>
       </div>
       <form [formGroup]="form()">

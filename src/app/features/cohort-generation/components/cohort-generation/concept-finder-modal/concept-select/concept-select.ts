@@ -42,8 +42,5 @@ export class ConceptSelect{
     return this.expandedConditions().has(conditionName);
   }
 
-  useConcept(condition: Concept): void {
-    this.onSelectConcept.emit(condition);
-  }
 }
 

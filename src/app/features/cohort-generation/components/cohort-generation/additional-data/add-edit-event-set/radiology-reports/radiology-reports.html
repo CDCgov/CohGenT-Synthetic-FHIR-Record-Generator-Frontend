@@ -1,0 +1,34 @@
+<div class="panel-header mb-4">
+  <h2>Radiology Report(s)</h2>
+</div>
+<div class="panel-content">
+@for (eadiologyFg of radiologyReportFormArray().controls; track eadiologyFg; let i = $index) {
+  @if (isFormGroup(eadiologyFg)) {
+    <div class="panel margin-bottom-md">
+      <div class="d-flex align-items-start gap-3">
+        <div class="flex-grow-1">
+          <div class="panel-header">
+            Radiology Report Concept
+            <div class="tag is-rounded form-tag required is-danger is-light margin-left-sm">
+              Required
+            </div>
+          </div>
+          <app-concept-form
+            [form]="eadiologyFg"
+            [option]="{'label':'', 'control':'other' , 'ruleId': 'radiologyConcept'}"
+            [formFieldHints]="UI_CONSTANTS.CONCEPT_HINTS.RADIOLOGY_REPORT"
+            [searchTermHint]="UI_CONSTANTS.SEARCH_TERM_HINTS.RADIOLOGY_CONCEPT"
+          ></app-concept-form>
+        </div>
+        <div class="flex-shrink-0">
+          <button matMiniFab aria-label="Delete Radiology Report"
+                  type="button" matTooltip="Delete Radiology Report" class="btn-danger outlined-fab"
+                  (click)="onDeleteRadiologyReport.emit(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}
+</div>

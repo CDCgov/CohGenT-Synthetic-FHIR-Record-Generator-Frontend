@@ -1,28 +1,29 @@
-@for (additionalDataFg of additionalDataFormArray?.controls; track additionalDataFg; let i = $index) {
+@for (additionalDataFg of additionalDataFormArray()?.controls; track additionalDataFg; let i = $index) {
   @if (isFormGroup(additionalDataFg)) {
-    @if (editIndex === i && isEditing) {
+    @if (additionalDataFg.get('isInEditMode').value) {
       <div class="event-set">
         <app-add-edit-event-set
           [additionalDataFg]="additionalDataFg"
           (onSave)="onSave(additionalDataFg)"
           (onCancel)="onCancel(additionalDataFg, i)"
-          [index]="i"
         />
       </div>
     }
     @else {
       <app-view-event-set
         (onDelete)="onDeleteEventSet($event)"
-        (onEdit)="onEditEventSet($event)"
+        (onEdit)="onEditEventSet(additionalDataFg)"
         [data]="form()?.controls?.['additional-data-time-series']?.getRawValue()?.[i]"
-        [index]="i"/>
+        [index]="i"
+        [editDisabled]="isEditing()"
+      />
     }
   }
 }
 
-@if (!isEditing || additionalDataFormArray?.controls.length == 0) {
+@if (!isEditing() || additionalDataFormArray()?.controls.length == 0) {
   <div class="d-flex justify-content-center">
-    <button class="w-50 secondary-btn" matButton="filled" (click)="addEvent(additionalDataFormArray)">
+    <button class="w-50 secondary-btn" matButton="filled" (click)="addEvent(additionalDataFormArray())">
       <mat-icon>add</mat-icon>
       Add New Clinical Data Set
     </button>

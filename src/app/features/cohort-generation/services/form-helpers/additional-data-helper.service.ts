@@ -86,6 +86,8 @@ export class AdditionalDataHelperService {
         eventSetTiming: eventSetTimingFg,
         diagnosticPanel: diagnosticPanelFg,
         deleteOnCancel: new FormControl(true),
+        isInEditMode: new FormControl(true),
+        nameCounter: new FormControl(1), //TODO rename in the future. We should consider using a better event set name, for now we use the generic Event Set [n]
       },
       { validators: this.eventSetContentValidator() }
     );
@@ -125,7 +127,8 @@ export class AdditionalDataHelperService {
       labResultConcept: this.conceptHelperService.buildFg(defaultSystem),
       availablePresets: new FormControl([]),
       selectedPreset: new FormControl(null),
-      isLoadingPresets: new FormControl(false) // Explicitly set to false
+      isLoadingPresets: new FormControl(false), // Explicitly set to false
+      deleteOnCancel: new FormControl(true)
     });
 
     // Subscribe to concept changes for this specific lab observation
@@ -232,7 +235,8 @@ export class AdditionalDataHelperService {
     const defaultSystem = SYSTEM_LIST.find(system => system.label === defaultSystemStr);
 
     const procedureFg = this.fb.group({
-      procedureConcept: this.conceptHelperService.buildFg(defaultSystem)
+      procedureConcept: this.conceptHelperService.buildFg(defaultSystem),
+      deleteOnCancel: new FormControl(true)
     });
 
     if(!additionalDataFg.get('procedures')) {
@@ -252,7 +256,8 @@ export class AdditionalDataHelperService {
     const defaultSystem = SYSTEM_LIST.find(system => system.label === defaultSystemStr);
 
     const radiologyReportFg = this.fb.group({
-      radiologyConcept: this.conceptHelperService.buildFg(defaultSystem)
+      radiologyConcept: this.conceptHelperService.buildFg(defaultSystem),
+      deleteOnCancel: new FormControl(true)
     });
 
     if(!additionalDataFg.get('radiologyList')) {
@@ -332,9 +337,6 @@ export class AdditionalDataHelperService {
     else {
       fgArray.removeAt(index);
     }
-
-    // Trigger validation update
-    additionalDataFg.updateValueAndValidity();
   }
 
   private buildEventSetTimingFg() {

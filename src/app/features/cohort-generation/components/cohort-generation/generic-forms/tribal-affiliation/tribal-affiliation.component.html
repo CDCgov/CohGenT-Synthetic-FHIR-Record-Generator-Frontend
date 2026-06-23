@@ -1,0 +1,78 @@
+<form [formGroup]="form()">
+  <div class=line-item [formGroupName]=option().ruleId>
+    <div class="form-heading">
+      <h2>{{ option().label }}</h2>
+      @if (option().tooltip) {
+        <mat-icon [matTooltip]="option().tooltip" class="margin-left-md tooltip-icon">info</mat-icon>
+      }
+      @for (tag of option().tags; track tag) {
+        @if ((tag | chipsStr); as chipValue) {
+          <div class="tag is-rounded form-tag"
+               [class]="chipValue.toLowerCase() === 'required' ? 'is-danger is-light' :
+                    chipValue.toLowerCase() === 'optional' ? 'is-white' :
+                    'is-light'">
+            {{ chipValue }}
+          </div>
+        }
+      }
+    </div>
+
+    <div class="description">{{ option().description }}</div>
+    <div class="controls">
+      <div class="form-group">
+
+        <app-prevalence
+          [form]="form().get(option().ruleId) | asFormGroup"
+          [option]="{ruleId: 'prevalence', control: 'prevalence', defaultValues: 5, label:''}"
+        >
+        </app-prevalence>
+
+        <div class="d-flex flex-col flex-md-row gap-2">
+          <mat-radio-group formControlName="isRandomlyAssigned" class="d-flex flex-col flex-md-row gap-4">
+            <mat-radio-button [value]="true">
+              <span>Randomly assigned tribal affiliations</span>
+            </mat-radio-button>
+            <mat-radio-button [value]="false">
+              <span>Single specific tribal affiliation:</span>
+            </mat-radio-button>
+          </mat-radio-group>
+
+          <mat-form-field appearance="outline" class="tribal-affiliation-search">
+            <mat-label>Tribal Affiliation</mat-label>
+            <input
+              type="text"
+              matInput
+              formControlName="affiliation"
+              [matAutocomplete]="auto"
+              placeholder="Search for tribal affiliation"
+            />
+            <mat-autocomplete
+              #auto="matAutocomplete"
+              [displayWith]="displayAffiliation.bind(this)"
+            >
+              @if (getFilteredAffiliations() | async; as affiliations) {
+                @for (affiliation of affiliations; track affiliation.code) {
+                  <mat-option [value]="affiliation">
+                    {{ affiliation.display }}
+                  </mat-option>
+                }
+              }
+            </mat-autocomplete>
+            <mat-error>
+              @if (form().get([option().ruleId, 'affiliation'])?.hasError('required')) {
+                Tribal affiliation is required
+              }
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+    </div>
+
+    @if (option().tags.includes('default')) {
+      <button matButton="outlined" type="button" (click)="onRestoreDefaults()">
+        Restore Defaults
+      </button>
+    }
+  </div>
+</form>

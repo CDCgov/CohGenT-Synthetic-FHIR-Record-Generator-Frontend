@@ -16,7 +16,7 @@
           <div class="w-full d-flex  margin-top-sm">
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>{{ LABELS.NUMBER_OF_PATIENTS }}</mat-label>
-              <input type="text" matInput formControlName="input">
+              <input type="text" matInput formControlName="input" maxlength="2">
               <mat-hint>{{ LABELS.SELECT_BETWEEN }}</mat-hint>
               @if (form().get(['numberOfPatients', 'input'])?.errors?.['required']) {
                 <mat-error>{{ ERROR_MSG.REQUIRED }}</mat-error>
@@ -24,7 +24,7 @@
               @if (form().get(['numberOfPatients', 'input'])?.errors?.['min']
               ||
               (form().get(['numberOfPatients', 'input'])?.errors?.['max'])) {
-                <mat-error>{{ LABELS.SELECT_BETWEEN }}</mat-error>
+                <mat-error>{{ LABELS.NUMBER_MUST_BR_BETWEEN }}</mat-error>
               }
             </mat-form-field>
           </div>

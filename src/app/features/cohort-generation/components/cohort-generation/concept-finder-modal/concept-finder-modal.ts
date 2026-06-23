@@ -44,6 +44,7 @@ export class ConceptFinderModal implements OnInit {
   systemList: { label: string; uri: string | null }[] = [];
   fromPreset: boolean = false;
   searchTermHint: string = '';
+  hasPresetsRendered = false;
 
   constructor(@Inject(MAT_DIALOG_DATA) private dialogData: ConceptFinderDialogData) {
   }
@@ -53,7 +54,9 @@ export class ConceptFinderModal implements OnInit {
     this.selectedSystem = this.dialogData.selectedSystem;
     this.fromPreset = this.dialogData.fromPreset;
     this.searchTermHint = this.dialogData.searchTermHint;
+    this.hasPresetsRendered = this.dialogData.hasPresetsRendered;
   }
+
   onSelectAndApplyConcept(concept: Concept){
     this.selectedConcept.set(concept);
     this.onSelect();
@@ -87,7 +90,8 @@ export function openConceptFinderModal(
       fromPreset: dialogData?.fromPreset ?? false,
       systemList: dialogData?.systemList ?? [],
       selectedSystem: dialogData?.selectedSystem,
-      searchTermHint: dialogData?.searchTermHint
+      searchTermHint: dialogData?.searchTermHint,
+      hasPresetsRendered: dialogData.hasPresetsRendered ?? false,
     }
   };
 

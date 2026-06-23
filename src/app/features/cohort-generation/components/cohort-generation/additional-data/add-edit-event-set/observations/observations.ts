@@ -1,0 +1,89 @@
+import {Component, inject, input, output} from '@angular/core';
+import {AsyncPipe} from "@angular/common";
+import {ConceptFormComponent} from "../../../generic-forms/concept-form/concept-form.component";
+import {FormArray, FormsModule, ReactiveFormsModule, isFormGroup, FormGroup} from "@angular/forms";
+import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/material/autocomplete";
+import {MatButton, MatMiniFabButton} from "@angular/material/button";
+import {MatError, MatFormField, MatInput, MatLabel} from "@angular/material/input";
+import {MatIcon} from "@angular/material/icon";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {MatSelect} from "@angular/material/select";
+import {MatTooltip} from "@angular/material/tooltip";
+import {SimpleWeightingFormArray} from "../../../generic-forms/simple-weighting-form-array/simple-weighting-form-array";
+import {UI_CONSTANTS} from '../../../../../../../constants/ui-constants';
+import {AdditionalDataHelperService} from '../../../../../services/form-helpers/additional-data-helper.service';
+import {PresetLabObservationValue} from '../../../../../services/preset-lab-observation-values.service';
+import {Utils} from '../../../../../services/utils.service';
+import {map, Observable, of, startWith} from 'rxjs';
+import {UNITS_OF_MEASURE} from '../../../../../../../constants/units_of_measure';
+
+@Component({
+  selector: 'app-observations',
+    imports: [
+        AsyncPipe,
+        ConceptFormComponent,
+        FormsModule,
+        MatAutocomplete,
+        MatAutocompleteTrigger,
+        MatButton,
+        MatError,
+        MatFormField,
+        MatIcon,
+        MatInput,
+        MatLabel,
+        MatMiniFabButton,
+        MatOption,
+        MatProgressSpinner,
+        MatSelect,
+        MatTooltip,
+        ReactiveFormsModule,
+        SimpleWeightingFormArray
+    ],
+  templateUrl: './observations.html',
+  styleUrl: './observations.scss',
+})
+export class Observations {
+  observationsFormArray = input<FormArray>();
+  onDeleteObservation = output<number>();
+  utils = inject(Utils);
+  protected readonly UNITS_OF_MEASURE = UNITS_OF_MEASURE;
+  additionalDataHelperSeries = inject(AdditionalDataHelperService);
+  protected readonly UI_CONSTANTS = UI_CONSTANTS.COHORT_GENERATION.ADDITIONAL_DATA;
+  protected readonly isFormGroup = isFormGroup;
+  protected filteredUnitsMap = new Map<string, Observable<typeof UNITS_OF_MEASURE>>();
+
+  addValue(labObservationFg: FormGroup, type: string) {
+    this.additionalDataHelperSeries.addValueFg(labObservationFg.get(['value', 'valueArray']) as FormArray, type);
+  }
+
+  onPresetSelected(labObservationFg: FormGroup, selectedPreset: PresetLabObservationValue | null) {
+    this.additionalDataHelperSeries.onPresetSelected(labObservationFg, selectedPreset);
+  }
+
+  getFilteredUnits(quantityFg: FormGroup): Observable<typeof UNITS_OF_MEASURE> {
+    // Use the form group instance as the key instead of its value
+    if (!this.filteredUnitsMap.has(quantityFg as any)) {
+      const unitControl = quantityFg.get('unit');
+      if (unitControl) {
+        const filtered$ = unitControl.valueChanges.pipe(
+          startWith(unitControl.value || ''),
+          map(value => this._filterUnits(value || ''))
+        );
+        this.filteredUnitsMap.set(quantityFg as any, filtered$);
+      } else {
+        // If unitControl doesn't exist, return an observable that emits an empty array
+        this.filteredUnitsMap.set(quantityFg as any, of([]));
+      }
+    }
+    return this.filteredUnitsMap.get(quantityFg as any)!;
+  }
+
+
+  private _filterUnits(value: string): typeof UNITS_OF_MEASURE {
+    const filterValue = value.toLowerCase();
+    return this.UNITS_OF_MEASURE.filter(unit =>
+      unit.Display.toLowerCase().startsWith(filterValue)
+    );
+  }
+
+}

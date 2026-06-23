@@ -9,7 +9,7 @@
             <app-view-event-set
               [data]="eventSetValue"
               [index]="i"
-              [editEnabled]="false"
+              [editModeEnabled]="false"
             />
           } @empty {
             <div>No Values Recorded</div>
@@ -18,7 +18,17 @@
       }
       @case ('medication') {
         <div class="margin-top-sm padding-md">
-          <app-medications-review [medications]="rule.medications"></app-medications-review>
+          @for (medicationSet of rule.medications; track medicationSet) {
+            <div class="margin-bottom-lg">
+              <app-view-medication-set
+                [data]="medicationSet"
+                [editModeEnabled]="false"
+              >
+              </app-view-medication-set>
+            </div>
+          } @empty {
+            <div>No Values Recorded</div>
+          }
         </div>
       }
       @case ('custom') {

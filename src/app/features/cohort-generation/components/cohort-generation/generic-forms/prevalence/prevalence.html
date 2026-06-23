@@ -1,0 +1,29 @@
+<form [formGroup]="form()">
+  <div class="d-flex gap-4" [formGroupName]=option().ruleId>
+    <mat-form-field appearance="outline" class="input-max-width">
+      <input id="value" type="text" matInput formControlName="value" min="0" max="100"/>
+      <mat-icon class="input-icon" matSuffix>percent</mat-icon>
+      <mat-error>
+        @if (form().get([option().ruleId, 'value'])?.hasError('required')) {
+          Value is required
+        }
+        @if (form().get([option().ruleId, 'value'])?.hasError('min')) {
+          Value must be greater than or equal to 0
+        }
+        @if (form().get([option().ruleId, 'value'])?.hasError('max')) {
+          Value must be less than or equal to 100
+        }
+      </mat-error>
+    </mat-form-field>
+
+    <mat-slider min="0" max="100" step="1" discrete showTickMarks class="slider-width">
+      <input matSliderThumb formControlName="slider">
+    </mat-slider>
+
+    @if (canRestoreDefaults()) {
+      <button matButton="outlined" type="button" (click)="onRestoreDefaults()">
+        Restore Defaults
+      </button>
+    }
+  </div>
+</form>

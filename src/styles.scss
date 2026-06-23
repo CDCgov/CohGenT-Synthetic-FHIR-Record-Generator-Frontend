@@ -9,19 +9,6 @@
 @use "sass:color";
 @use "sass:meta";
 
-// @import 'theme.scss';
-
-// html {
-//   @include mat.theme((
-//     color: (
-//       primary: mat.$azure-palette,
-//       tertiary: mat.$blue-palette,
-//     ),
-//     typography: Inter,
-//     density: 0,
-//   ));
-// }
-
 html {
   /* Only light mode, pure grayscale */
   color-scheme: light;
@@ -202,6 +189,15 @@ body {
   @include mat.divider-overrides((
     color: #ececec,
   ));
+
+  @include mat.menu-overrides((
+    divider-top-spacing: 0,
+    divider-bottom-spacing: 0
+  ));
+  @include mat.radio-overrides((
+    label-text-weight: 500,
+    label-text-size: 1em
+  ));
 }
 .rounded-0 { border-radius: 0 !important; }
 .rounded-1 { border-radius: 0.25rem !important; }
@@ -377,7 +373,7 @@ h3{
 }
 .field-label{
   font-weight: 500;
-      color: #333333;
+  color: #333333;
 }
 
 .centered-content{
@@ -458,6 +454,10 @@ h3{
       small-ripple-color: var(--red-50),
       small-container-elevation-shadow: rgba(0,0,0,0)
   ));
+  @include mat.icon-button-overrides((
+      icon-color: var(--zinc-600),
+      state-layer-color: var(--red-50),
+  ));
 
   &.outlined-fab {
     &:hover{
@@ -465,6 +465,12 @@ h3{
       @include mat.fab-overrides((
         small-foreground-color:  var(--red-600),
       ));
+    }
+  }
+
+  &:hover {
+    mat-icon {
+      color: var(--red-600);
     }
   }
 
@@ -832,7 +838,7 @@ $tag-colors: (
   //   }
 }
 .input-max-width {
-  max-width: 110px;
+  max-width: 100px;
   .mat-mdc-form-field-icon-suffix{
     padding: 0;
     .mat-icon{
@@ -864,13 +870,29 @@ $tag-colors: (
 }
 
 /* Set mat-tab content height for concept-form */
-app-concept-form .mat-mdc-tab-body-content {
-  overflow: visible !important;
-  height: 8em !important;
+app-concept-form .mat-mdc-tab-body-wrapper {
+  flex-grow: 1;
 }
 
-/* When manual entry tab is selected, allow full height */
-app-concept-form .tab-container.full-height .mat-mdc-tab-body-content {
-  height: auto !important;
+app-concept-form .mat-mdc-tab-body {
   overflow: visible !important;
+}
+
+app-concept-form .mat-mdc-tab-body-content {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.helper-text {
+  font-size: 0.875rem;
+  color: #6a7282;
+  margin-top: 8px;
+}
+
+.bold-text{
+  font-weight: 600;
 }

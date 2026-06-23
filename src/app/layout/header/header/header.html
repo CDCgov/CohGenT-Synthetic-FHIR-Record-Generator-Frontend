@@ -19,22 +19,36 @@
       <mat-icon>home</mat-icon>
       Home
     </button>
-    <!-- TODO link the documentation here -->
-    <button matButton matTooltip="Open documentation in a new window." (click)="onDocumentation()">
-      <mat-icon>article</mat-icon>
-      Documentation
-    </button>
-    @if(this.configService.config.contactEmail){
-      <button matButton (click)="sendEmail()">
-        <mat-icon>mail</mat-icon>
-        Contact Us
+
+    <div class="col-right-aligned margin-right-lg gap-3">
+      <button matIconButton [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
       </button>
-      <button matButton="outlined" class="report-issue-btn" (click)="onReportIssue()"
-              matTooltip="Open default email client with the current cohort configuration included in the message.">
-        <mat-icon>warning</mat-icon>
-        Report Issue
-      </button>
-    }
-    <div class="version-text">Version: {{ configService?.config?.version }}</div>
+      <mat-menu #menu="matMenu" class="header-menu">
+        <button mat-menu-item (click)="onDocumentation()">
+          <mat-icon>article</mat-icon>
+          <span>Documentation</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="openGithubRepo()">
+          <mat-icon svgIcon="github"></mat-icon>
+          <span>Github Repository</span>
+        </button>
+        @if (this.configService.config.contactEmail) {
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="sendEmail()">
+            <mat-icon>mail</mat-icon>
+            <span>Contact Us</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item class="error" (click)="onReportIssue()"
+                  matTooltip="Open default email client with the current cohort configuration included in the message.">
+            <mat-icon>warning</mat-icon>
+            <span>Report Issue</span>
+          </button>
+        }
+      </mat-menu>
+      <div class="version-text">Version: {{ configService?.config?.version }}</div>
+    </div>
   </div>
 </div>

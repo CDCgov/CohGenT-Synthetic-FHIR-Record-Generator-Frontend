@@ -7,6 +7,8 @@
         [formRules]="useCase?.formRules!"
         (formRuleSelectedEvent)="onFormRuleSelected($event)"
         [form]="form"
+        [disabled]="stepLockTracker.isLocked()"
+        [menuDisabledMessage]="stepLockTracker.tooltipMessage()"
       >
       </app-step-selector>
     </div>
@@ -14,149 +16,170 @@
       <app-cohort-info></app-cohort-info>
     </div>
 
-    <div class="border-top mt-4">
-      <button matButton="outlined" (click)="onExportCohortConfiguration()" class="w-full">
+    <div [matTooltip]="stepLockTracker.tooltipMessage()"
+         [matTooltipDisabled]="!stepLockTracker.isLocked()">
+      <button matButton="outlined"
+              [disabled]="stepLockTracker.isLocked()"
+              (click)="onExportCohortConfiguration()"
+              class="w-full">
         <mat-icon>download</mat-icon>
-         Save Cohort Settings
+        Save Cohort Settings
       </button>
     </div>
 
   </div>
   <div class="flex-col stepper-content-container">
     @if (form && useCase?.formRules) {
-      <mat-stepper #stepper>
+      <mat-stepper #stepper (selectionChange)="onStepChange($event)">
         @for (rule of useCase?.formRules; track rule; let index = $index) {
           <mat-step>
-          <!-- STICKY stepper nav + progress -->
-          <div class="stepper-header">
-            <div class="margin-top-lg flex-row space-between">
-              <div>
-                @if (index != 0) {
-                  <button matButton="filled" matStepperPrevious (click)="onBack()">
-                    <mat-icon>arrow_left</mat-icon>
-                    Back
-                  </button>
-                }
-              </div>
-              <div class="centered-content label">
-                {{ stepper.selectedIndex + 1 }}/{{ stepper.steps.length }}
-              </div>
-              <div class="right-aligned-content">
-                @if (index != (useCase?.formRules!.length - 1)) {
-                  <button matButton="filled" (click)="onNext(index);">
-                    Next
-                    <mat-icon iconPositionEnd>arrow_right</mat-icon>
-                  </button>
-                }
-              </div>
-            </div>
-
-            <div class="mb-4 mt-4">
-              <mat-progress-bar
-                mode="determinate"
-                class="rounded-progress-bar mb-2"
-                [value]="(stepper.selectedIndex + 1) / stepper.steps.length * 100">
-              </mat-progress-bar>
-            </div>
-            <div class="step-info-header border-b pb-4">
-              <div class="step-title"><h1>{{ rule.title | ruleTitle: rule.type }}</h1></div>
-              <div class="step-description">{{ rule.description | ruleDescription : rule.type }}</div>
-            </div>
-
-          </div>
-          <!-- END sticky header -->
-          @if (form && form.controls) {
-            @if (rule.type === 'custom') {
-              @if (rule.stepOrder === 1) {
-                <!--TODO: assumes demographics is STEP 1 - Needs to make this dynamic and driven by data config-->
-                @if (isCustomizingDefaults()) {
-                  <div class="custom-form-header">
-                    <div class="justify-content-end align-items-center flex-row">
-                      <button matButton="outlined" (click)="toggleCustomizing() ">
-                        <mat-icon>arrow_back</mat-icon>
-                        Back to Summary
+            <!-- STICKY stepper nav + progress -->
+            <div class="stepper-header">
+              <div class="margin-top-lg flex-row space-between">
+                <div>
+                  @if (index != 0) {
+                    <span [matTooltip]="stepLockTracker.tooltipMessage()"
+                          [matTooltipDisabled]="!stepLockTracker.isLocked()">
+                      <button matButton="filled"
+                              [disabled]="stepLockTracker.isLocked()"
+                              (click)="onBack()">
+                        <mat-icon>arrow_left</mat-icon>
+                        Back
                       </button>
+                    </span>
+                  }
+                </div>
+                <div class="centered-content label">
+                  {{ stepper.selectedIndex + 1 }}/{{ stepper.steps.length }}
+                </div>
+                <div class="right-aligned-content">
+                  @if (index != (useCase?.formRules!.length - 1)) {
+                    <span [matTooltip]="stepLockTracker.tooltipMessage()"
+                          [matTooltipDisabled]="!stepLockTracker.isLocked()">
+                      <button matButton="filled"
+                              [disabled]="stepLockTracker.isLocked()"
+                              (click)="onNext(index);">
+                        Next
+                        <mat-icon iconPositionEnd>arrow_right</mat-icon>
+                      </button>
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <div class="mb-4 mt-4">
+                <mat-progress-bar
+                  mode="determinate"
+                  class="rounded-progress-bar mb-2"
+                  [value]="(stepper.selectedIndex + 1) / stepper.steps.length * 100">
+                </mat-progress-bar>
+              </div>
+              <div class="step-info-header border-b pb-4">
+                <div class="step-title"><h1>{{ rule.title | ruleTitle: rule.type }}</h1></div>
+                <div class="step-description">{{ rule.description | ruleDescription : rule.type }}</div>
+              </div>
+
+            </div>
+            <!-- END sticky header -->
+            @if (form && form.controls) {
+              @if (rule.type === 'custom') {
+                @if (rule.stepOrder === 1) {
+                  <!--TODO: assumes demographics is STEP 1 - Needs to make this dynamic and driven by data config-->
+                  @if (isCustomizingDefaults()) {
+                    <div class="custom-form-header">
+                      <div class="justify-content-end align-items-center flex-row">
+                        <button matButton="outlined" (click)="toggleCustomizing() ">
+                          <mat-icon>arrow_back</mat-icon>
+                          Back to Summary
+                        </button>
+                      </div>
+                      <app-custom-form
+                        [index]="index"
+                        [options]="rule.options"
+                        [form]="$any(form.get('step_' + index))"
+                        [originalFrom]="$any(originalForm.get('step_' + index))"
+                      />
                     </div>
-                    <app-custom-form
-                      [index]="index"
-                      [options]="rule.options"
-                      [form]="$any(form.get('step_' + index))"
-                      [originalFrom]="$any(originalForm.get('step_' + index))"
+                  } @else {
+                    <app-defaults-summary
+                      [title]="rule.title"
+                      [rule]="rule"
+                      [stepFormValue]="formValue()['step_' + index]?.['custom_' + index]"
+                      [units]="weightingHelperService.units()"
+                      (onCustomize)="toggleCustomizing()"
                     />
-                  </div>
+                  }
                 } @else {
-                  <app-defaults-summary
-                    [title]="rule.title"
-                    [rule]="rule"
-                    [stepFormValue]="formValue()['step_' + index]?.['custom_' + index]"
-                    [units]="weightingHelperService.units()"
-                    (onCustomize)="toggleCustomizing()"
+                  <app-custom-form
+                    [index]="index"
+                    [options]="rule.options"
+                    [form]="$any(form.get('step_' + index))"
+                    [originalFrom]="$any(originalForm.get('step_' + index))"
                   />
                 }
-              }
-              @else{
-                <app-custom-form
-                  [index]="index"
-                  [options]="rule.options"
+              } @else if (rule.type == 'medication') {
+                <app-medications
                   [form]="$any(form.get('step_' + index))"
-                  [originalFrom]="$any(originalForm.get('step_' + index))"
                 />
+              } @else if (rule.type == 'additional-data-time-series') {
+                <app-additional-data
+                  [form]="$any(form.get('step_' + index))"
+                >
+                </app-additional-data>
+              } @else if (rule.type == 'review') {
+                <app-review-cohort
+                  [formValue]="form.value"
+                  [formRules]="useCase?.formRules"
+                >
+                </app-review-cohort>
+              } @else if (rule.type == 'generate') {
+                <app-generate-cohort
+                  [cohortGeneratedSuccessfully]="cohortGeneratedSuccessfully()"
+                  [cohortInfo]="{ timestamp: generatedCohortResponse()?.timeStamp, name: cohortService?.cohortData()?.metadata?.cohortName ?? ''}"
+                  [form]="$any(form.get(['step_' + index, 'generate']))"
+                  (formSubmit)="onSubmit()"
+                  (onViewSummary)="onViewCohortSummary()"
+                  (onDownloadCohort)="onDownloadCohort()"
+                ></app-generate-cohort>
               }
-            } @else if (rule.type == 'medication') {
-              <app-medications
-                [form]="$any(form.get('step_' + index))"
-              />
-            } @else if (rule.type == 'additional-data-time-series') {
-              <app-additional-data
-                [form]="$any(form.get('step_' + index))"
-              >
-              </app-additional-data>
-            } @else if (rule.type == 'review') {
-              <app-review-cohort
-                [formValue]="form.value"
-                [formRules]="useCase?.formRules"
-              >
-              </app-review-cohort>
-            } @else if (rule.type == 'generate') {
-              <app-generate-cohort
-                [cohortGeneratedSuccessfully]="cohortGeneratedSuccessfully()"
-                [cohortInfo]="{ timestamp: generatedCohortResponse()?.timeStamp, name: cohortService?.cohortData()?.metadata?.cohortName ?? ''}"
-                [form]="$any(form.get(['step_' + index, 'generate']))"
-                (formSubmit)="onSubmit()"
-                (onViewSummary)="onViewCohortSummary()"
-                (onDownloadCohort)="onDownloadCohort()"
-              ></app-generate-cohort>
+              <!-- Start stepper navigation-->
+              <div class="margin-top-lg flex-row space-between">
+                <div>
+                  @if (index != 0) {
+                    <span [matTooltip]="stepLockTracker.tooltipMessage()"
+                          [matTooltipDisabled]="!stepLockTracker.isLocked()">
+                      <button matButton="filled"
+                              [disabled]="stepLockTracker.isLocked()"
+                              (click)="onBack()">
+                        <mat-icon>arrow_left</mat-icon>
+                        Back
+                      </button>
+                    </span>
+                  }
+                </div>
+                <div>
+                  @if (form!.get(['step_' + index])?.invalid && areAllControlsTouched($any(form!.get(['step_' + index])))) {
+                    <mat-error class="alert alert-danger" role="alert">One or more form fields are invalid</mat-error>
+                  }
+                </div>
+                <div class="right-aligned-content">
+                  @if (index != (useCase?.formRules!.length - 1)) {
+                    <span [matTooltip]="stepLockTracker.tooltipMessage()"
+                          [matTooltipDisabled]="!stepLockTracker.isLocked()">
+                      <button matButton="filled"
+                              [disabled]="stepLockTracker.isLocked()"
+                              (click)="onNext(index);">
+                        Next
+                        <mat-icon iconPositionEnd>arrow_right</mat-icon>
+                      </button>
+                    </span>
+                  }
+                </div>
+              </div>
+              <!-- End stepper navigation-->
             }
-            <!-- Start stepper navigation-->
-            <div class="margin-top-lg flex-row space-between">
-              <div>
-                @if (index != 0) {
-                  <button matButton="filled" matStepperPrevious (click)="onBack()">
-                    <mat-icon>arrow_left</mat-icon>
-                    Back
-                  </button>
-                }
-              </div>
-              <div>
-                @if (form!.get(['step_' + index])?.invalid && areAllControlsTouched($any(form!.get(['step_' + index])))) {
-                  <mat-error class="alert alert-danger" role="alert">One or more form fields are invalid</mat-error>
-                }
-              </div>
-              <div class="right-aligned-content">
-                @if (index != (useCase?.formRules!.length - 1)) {
-                  <button matButton="filled" (click)="onNext(index);">
-                    Next
-                    <mat-icon iconPositionEnd>arrow_right</mat-icon>
-                  </button>
-                }
-              </div>
-            </div>
-            <!-- End stepper navigation-->
-
-          }
-        </mat-step>
+          </mat-step>
         }
-
       </mat-stepper>
     }
   </div>

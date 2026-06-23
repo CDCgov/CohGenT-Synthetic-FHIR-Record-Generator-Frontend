@@ -1,0 +1,74 @@
+<div class="panel gray-bg ">
+<div class="panel-header d-flex align-items-center">
+  <div class="d-flex align-items-center">
+    <div class="tag is-white">
+      {{ UI_CONSTANTS.MEDICATION_SET }} {{ data()?.nameCounter }}
+    </div>
+    @if (editModeEnabled()) {
+      <button matIconButton
+              [matTooltip]="'Edit ' + UI_CONSTANTS.MEDICATION_SET + ' ' + data()?.nameCounter"
+              [aria-label]="'Edit ' + UI_CONSTANTS.MEDICATION_SET + ' ' + data()?.nameCounter"
+              class="margin-left-sm"
+              (click)="onEditMedicationSet(index())"
+              [disabled]="editDisabled()"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button matIconButton
+              [matTooltip]="'Duplicate ' + UI_CONSTANTS.MEDICATION_SET + ' ' + data()?.nameCounter"
+              [aria-label]="'Duplicate ' + UI_CONSTANTS.MEDICATION_SET + ' ' + data()?.nameCounter"
+              (click)="onCopyMedicationSet(index())"
+      >
+        <mat-icon>content_copy</mat-icon>
+      </button>
+      <button matIconButton
+              [matTooltip]="'Delete ' + UI_CONSTANTS.MEDICATION_SET + ' ' + data()?.nameCounter"
+              [aria-label]="'Delete ' + UI_CONSTANTS.MEDICATION_SET + ' ' + data()?.nameCounter"
+              class="btn-danger"
+              (click)="onDeleteMedicationSet(index())"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    }
+  </div>
+  @if (editModeEnabled()) {
+    <div class="weight-container">
+      <form [formGroup]="medicationSetFg()">
+        <div formGroupName="weightFg" class="d-flex align-items-center gap-1">
+          <label class="weight-label">Apply medication set to</label>
+          <mat-form-field appearance="outline" class="input-max-width weight-input">
+            <input type="text" matInput formControlName="weight" class="input-max-width"
+                   (focus)="onWeightFocus()"
+                   (blur)="onWeightBlur()"
+                   (keyup.enter)="calculateWeights()">
+            <mat-icon matSuffix>percent</mat-icon>
+          </mat-form-field>
+          @if (medicationSetsFormArray()?.length > 1) {
+            @if (medicationSetFg().get(['weightFg', 'lock'])?.value) {
+              <mat-icon class="lock-icon" (click)="toggleLock()"
+                        [matTooltip]="'Unlock weight'"
+                        [attr.aria-label]="'Unlock weight'">
+                lock
+              </mat-icon>
+            } @else {
+              <mat-icon class="lock-icon" (click)="toggleLock()"
+                        [matTooltip]="'Lock weight'"
+                        [attr.aria-label]="'Lock weight'">
+                lock_open
+              </mat-icon>
+            }
+          }
+          <label class="weight-label">of patients</label>
+
+        </div>
+      </form>
+    </div>
+  }
+  @else {
+    <span class="weight-display">Weight: {{ data()?.['weightFg']?.['weight'] }}% </span>
+  }
+
+</div>
+
+<app-medications-review [medications]="data().medications"></app-medications-review>
+</div>

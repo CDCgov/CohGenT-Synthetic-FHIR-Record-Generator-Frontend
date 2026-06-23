@@ -1,0 +1,173 @@
+<div class="panel-header mb-4">
+  <h2>Lab/Observation(s)</h2>
+</div>
+<div class="panel-content">
+  @for (labObservationFg of observationsFormArray().controls; track labObservationFg; let i = $index) {
+    @if (labObservationFg && isFormGroup(labObservationFg)) {
+      <div class="panel margin-bottom-md" [formGroup]="labObservationFg">
+        <div class="d-flex align-items-start gap-3">
+          <div class="flex-grow-1">
+            <div class="panel-header">
+              Observation Concept
+              <div class="tag is-rounded form-tag required is-danger is-light margin-left-sm">
+                Required
+              </div>
+            </div>
+            <app-concept-form
+              [form]="labObservationFg"
+              [option]="{'label':'', 'control':'other' , 'ruleId': `labResultConcept`}"
+              [formFieldHints]="UI_CONSTANTS.CONCEPT_HINTS.OBSERVATION"
+              [searchTermHint]="UI_CONSTANTS.SEARCH_TERM_HINTS.LAB_RESULT_CONCEPT"
+              [hasPresetsRendered]="true"
+            ></app-concept-form>
+          </div>
+          <div class="flex-shrink-0">
+            <button matMiniFab aria-label="Delete Lab Observation"
+                    type="button" matTooltip="Delete Lab/Observation" class="btn-danger outlined-fab"
+                    (click)="onDeleteObservation.emit(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="row pt-4">
+          <div class="panel-header margin-bottom-sm">
+            Observation Value
+            <div class="tag is-rounded form-tag required is-danger is-light margin-left-sm">
+              Required
+            </div>
+          </div>
+          <div class="margin-bottom-md margin-top-md">
+            <div class="helper-text">
+              {{ UI_CONSTANTS.LAB_RESULTS_VALUES_DESCRIPTIONS.SELECT_VALUE_TYPE_DESCRIPTION }}
+            </div>
+          </div>
+          <div formGroupName="value" class="margin-top-md">
+            <div class="d-flex align-items-top">
+              <mat-form-field appearance="outline" class="margin-right-lg">
+                <mat-label>Value Type</mat-label>
+                <mat-select formControlName="valueType">
+                  @for (type of additionalDataHelperSeries.valueTypes; track type) {
+                    <mat-option [value]="type.value">{{ type.display }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              @if (labObservationFg.get(['value', 'valueType'])!.value == 'quantity') {
+                @let availablePresets = labObservationFg.get('availablePresets')?.value;
+                @let selectedPreset = labObservationFg.get('selectedPreset')?.value;
+                @let isLoadingPresets = labObservationFg.get('isLoadingPresets')?.value;
+                @let conceptCode = labObservationFg.get(['labResultConcept', 'code'])?.value;
+                <mat-form-field appearance="outline" class="margin-right-md" style="min-width: 25em">
+                  <mat-label>
+                    @if (isLoadingPresets) {
+                      Searching for Presets...
+                    } @else if (selectedPreset == 'Custom') {
+                      Custom
+                    } @else if (!conceptCode) {
+                      Enter a concept code to see presets
+                    } @else if (availablePresets && availablePresets.length > 0) {
+                      Select Preset ({{ availablePresets.length }} found)
+                    } @else {
+                      No presets available
+                    }
+                  </mat-label>
+                  <mat-select
+                    [value]="selectedPreset"
+                    [disabled]="isLoadingPresets || !availablePresets || availablePresets.length === 0"
+                    (selectionChange)="onPresetSelected(labObservationFg, $event.value)">
+                    @if (availablePresets && availablePresets.length > 0) {
+                      @for (preset of availablePresets; track preset.presetName) {
+                        @if (preset !== 'Custom') {
+                          <mat-option [value]="preset">{{ preset.presetName }}</mat-option>
+                        }
+                      }
+                    }
+                  </mat-select>
+                </mat-form-field>
+                @if (isLoadingPresets) {
+                  <mat-spinner class="margin-top-md" diameter="24" style="margin-left: 8px;"></mat-spinner>
+                }
+              }
+            </div>
+
+            @if (labObservationFg.get(['value', 'valueType'])!.value == 'string') {
+              <div
+                class="helper-text margin-bottom-md">{{ UI_CONSTANTS.LAB_RESULTS_VALUES_DESCRIPTIONS.STRING }}
+              </div>
+              <app-simple-weighting-form-array
+                [formArray]="utils.getFormControlsByName(labObservationFg, ['value', 'valueArray'])">
+              </app-simple-weighting-form-array>
+            } @else {
+              <div
+                class="helper-text margin-bottom-md">{{ UI_CONSTANTS.LAB_RESULTS_VALUES_DESCRIPTIONS.QUANTITY.PART_1 }}
+                <a href="https://ucum.org/"
+                   target="_blank">(UCUM)</a>. {{ UI_CONSTANTS.LAB_RESULTS_VALUES_DESCRIPTIONS.QUANTITY.PART_2 }}
+              </div>
+              @for (quantityFg of utils.getFormControlsByName(labObservationFg, ['value', 'valueArray'])?.controls;
+                track quantityFg) {
+                @if (isFormGroup(quantityFg)) {
+                  <div [formGroup]="quantityFg" class="d-flex align-items-top">
+                    <mat-form-field appearance="outline" class="margin-right-md">
+                      <mat-label>Minimum Value</mat-label>
+                      <input type="number" matInput formControlName="min">
+                      @if (quantityFg.get('min')?.invalid) {
+                        <mat-error>
+                          @if (quantityFg.get('min')?.hasError('required')) {
+                            Minimum value is required
+                          }
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="margin-right-md">
+                      <mat-label>Maximum Value</mat-label>
+                      <input type="number" matInput formControlName="max">
+                      @if (quantityFg.get('max')?.invalid) {
+                        <mat-error>
+                          @if (quantityFg.get('max')?.hasError('required')) {
+                            Maximum value is required
+                          }
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="margin-right-md">
+                      <mat-label>Units</mat-label>
+                      <input
+                        type="text"
+                        matInput
+                        formControlName="unit"
+                        [matAutocomplete]="auto"
+                      />
+                      <mat-autocomplete #auto="matAutocomplete">
+                        @if (getFilteredUnits(quantityFg) | async; as units) {
+                          @for (unit of units; track unit.Code) {
+                            <mat-option [value]="unit.Display">{{ unit.Display }}</mat-option>
+                          }
+                        }
+                      </mat-autocomplete>
+                      @if (quantityFg.get('unit')?.invalid) {
+                        <mat-error>
+                          @if (quantityFg.get('unit')?.hasError('required')) {
+                            Unit value is required
+                          }
+                        </mat-error>
+                      }
+                    </mat-form-field>
+
+                  </div>
+                }
+              }
+            }
+            @if (labObservationFg.get(['value', 'valueType'])!.value == 'string') {
+              <button matButton="outlined" type="button"
+                      (click)="addValue(labObservationFg, labObservationFg.get(['value', 'valueType'])!.value)">
+                <mat-icon>add</mat-icon>
+                Add Value
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

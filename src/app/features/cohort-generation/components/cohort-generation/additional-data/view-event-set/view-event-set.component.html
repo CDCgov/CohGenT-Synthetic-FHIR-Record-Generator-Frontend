@@ -2,15 +2,25 @@
   <div class="panel-header d-flex align-items-center">
     <div class="d-flex align-items-center">
       <div class="tag is-white border">
-        Clinical Data Set {{ index() + 1 }}
+        Clinical Data Set {{ data()?.nameCounter }}
       </div>
     </div>
-
-    @if (editEnabled()) {
-      <button matIconButton aria-label="edit clinical data set" (click)="onEditEventSet()">
+    @if (editModeEnabled()) {
+      <button matIconButton
+              [matTooltip]="'Edit ' + UI_CONSTANTS.CLINICAL_DATA_SET + ' ' + data()?.nameCounter"
+              [aria-label]="'Edit ' + UI_CONSTANTS.CLINICAL_DATA_SET + ' ' + data()?.nameCounter"
+              class="margin-left-sm"
+              (click)="onEditEventSet()"
+              [disabled]="editDisabled()"
+      >
         <mat-icon>edit</mat-icon>
       </button>
-      <button matIconButton aria-label="Delete clinical data set" (click)="onDeleteEventSet()">
+      <button matIconButton
+              [matTooltip]="'Delete ' + UI_CONSTANTS.CLINICAL_DATA_SET + ' ' + data()?.nameCounter"
+              [aria-label]="'Delete ' + UI_CONSTANTS.CLINICAL_DATA_SET + ' ' + data()?.nameCounter"
+              class="btn-danger"
+              (click)="onDeleteEventSet(index())"
+      >
         <mat-icon>delete</mat-icon>
       </button>
     }

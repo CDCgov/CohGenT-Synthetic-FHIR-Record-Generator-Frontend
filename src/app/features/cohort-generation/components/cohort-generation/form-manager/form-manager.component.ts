@@ -2,13 +2,13 @@ import {
   AfterViewInit,
   Component,
   effect,
-  inject,
+  inject, OnDestroy,
   signal,
   ViewChild,
   WritableSignal,
 } from '@angular/core';
 import {MatButton} from '@angular/material/button';
-import {MatStep, MatStepper, MatStepperPrevious} from '@angular/material/stepper';
+import {MatStep, MatStepper} from '@angular/material/stepper';
 import {FormArray, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {UseCase} from '../../../models/use-case';
 import {CohortGenerationRequestBody} from '../../../models/cohort-generation-request-body';
@@ -32,6 +32,11 @@ import {openConfirmationSummaryModal} from '../generation-summary-modal/generati
 import {MatDialog} from '@angular/material/dialog';
 import {WeightingHelperService} from '../../../services/form-helpers/weighting-helper.service';
 import {Utils} from '../../../services/utils.service';
+import {MatTooltip} from '@angular/material/tooltip';
+import {UI_CONSTANTS} from '../../../../../constants/ui-constants';
+import {StepperLockTracker} from '../../../services/form-helpers/stepper-lock-tracker';
+import {MedicationHelperService} from '../../../services/form-helpers/medication-helper.service';
+import {StepperSelectionEvent} from '@angular/cdk/stepper';
 
 @Component({
   selector: 'app-form-manager',
@@ -42,7 +47,6 @@ import {Utils} from '../../../services/utils.service';
     ReactiveFormsModule,
     MatFormFieldModule,
     CustomForm,
-    MatStepperPrevious,
     StepSelectorComponent,
     MatIcon,
     MatProgressBar,
@@ -53,31 +57,34 @@ import {Utils} from '../../../services/utils.service';
     MedicationsComponent,
     RuleTitlePipe,
     RuleDescriptionPipe,
-    DefaultsSummaryComponent
+    DefaultsSummaryComponent,
+    MatTooltip
   ],
   providers: [DatePipe],
   templateUrl: './form-manager.component.html',
   styleUrls: ['./form-manager.component.scss', '../cohort-generation.component.scss'],
 })
-export class FormManagerComponent implements AfterViewInit {
+export class FormManagerComponent implements AfterViewInit, OnDestroy {
 
   useCase!: UseCase;
   form: FormGroup = new FormGroup({});
   originalForm: FormGroup = new FormGroup({});
+  protected readonly UI_CONSTANTS = UI_CONSTANTS;
 
   protected cohortService: CohortService = inject(CohortService);
   protected weightingHelperService: WeightingHelperService = inject(WeightingHelperService);
   private formManagerService: FormManagerService = inject(FormManagerService);
   private dialog: MatDialog = inject(MatDialog);
   private utils = inject(Utils);
+  protected stepLockTracker = inject(StepperLockTracker);
+  private medicationServiceHelper = inject(MedicationHelperService);
 
   cohortGeneratedSuccessfully = signal(false);
   generatedCohortResponse: WritableSignal<any> = signal(null);
   isCustomizingDefaults = signal(false);
+  formValue = signal<any>({});
 
   @ViewChild('stepper') stepper!: MatStepper;
-
-  formValue = signal<any>({});
 
   constructor() {
     effect(() => {
@@ -87,10 +94,15 @@ export class FormManagerComponent implements AfterViewInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.stepLockTracker.setStepperLock(false);
+  }
+
   ngAfterViewInit(): void {
     if (this.cohortService.cohortData()?.isImported && this.stepper) {
       const reviewCohortIndex =
         this.cohortService.cohortData()?.selectedUseCase?.formRules?.find(rule=> rule.type === 'review')?.stepOrder - 1;
+      // Always transition to the Review Cohort page when importing a cohort
       this.stepper.selectedIndex = reviewCohortIndex ?? 0;
     }
     this.form.valueChanges.subscribe(() => {
@@ -121,11 +133,7 @@ export class FormManagerComponent implements AfterViewInit {
   }
 
   onViewCohortSummary() {
-    openConfirmationSummaryModal(this.dialog, this.generatedCohortResponse()).subscribe({
-      next: val => {
-        console.log(val)
-      }
-    });
+    openConfirmationSummaryModal(this.dialog, this.generatedCohortResponse()).subscribe();
   }
 
   onSubmit() {
@@ -158,15 +166,37 @@ export class FormManagerComponent implements AfterViewInit {
     });
   }
 
-  onNext(index: number) {
-    const stepFg = this.form.get(`step_${index}`) as FormGroup;
-    stepFg.markAllAsTouched();
-    stepFg.updateValueAndValidity();
+  /**
+   * Handle stepper selection change event.
+   * Validates the previous step (the one being navigated away from).
+   */
+  onStepChange(event: StepperSelectionEvent): void {
+    // Validate the previous step when navigating away from it
+    const previousStepIndex = event.previouslySelectedIndex;
+    const previousStepControl = this.form.get(`step_${previousStepIndex}`);
 
-    if (stepFg.valid) {
+    if (previousStepControl) {
+      previousStepControl.markAllAsTouched();
+
+      // Check if the previous step was the medication step and validate weight sum
+      const previousRule = this.useCase?.formRules[previousStepIndex];
+      if (previousRule?.type === 'medication') {
+        const medicationArray = previousStepControl.get('medication') as FormArray;
+        if (medicationArray) {
+          this.medicationServiceHelper.validateWeightSum(medicationArray);
+        }
+      }
+    }
+  }
+
+  onNext(index: number) {
+    this.form.get(`step_${index}`).markAllAsTouched();
+    this.form.get(`step_${index}`).updateValueAndValidity();
+    if(!this.form.get(`step_${index}`).invalid) {
       this.stepper.next();
       this.formManagerService.setCurrentStep(this.stepper.selectedIndex);
     }
+
   }
 
   onFormRuleSelected(selectedStepIndex: number) {
@@ -194,10 +224,6 @@ export class FormManagerComponent implements AfterViewInit {
     URL.revokeObjectURL(link.href);
   }
 
-  onConfirmDefaults(checked: boolean) {
-    console.log('Defaults confirmed', checked);
-  }
-
   toggleCustomizing() {
     this.isCustomizingDefaults.set(!this.isCustomizingDefaults());
     this.formValue.set(this.form.getRawValue());
@@ -211,6 +237,8 @@ export class FormManagerComponent implements AfterViewInit {
   }
 
   onBack() {
+    this.stepper.previous();
     this.formManagerService.setCurrentStep(this.stepper.selectedIndex);
   }
+
 }

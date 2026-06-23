@@ -1,15 +1,43 @@
-<div #medicationsContainer>
-  @for (medicationFg of medicationFromArray?.controls; track medicationFg; let i = $index) {
-    <app-medication-form
-      [medicationForm]="$any(medicationFg)"
-      [index]="i"
-      (delete)="onDeleteMedication(i)"
-    />
+<div #medicationSetsContainer>
+@for (medicationSetFg of medicationSetsFormArray()?.controls; track medicationSetFg; let i = $index) {
+  @if (isFormGroup(medicationSetFg)) {
+    <div class="margin-bottom-sm">
+      @if (medicationSetFg.get('isInEditMode').value) {
+        <app-add-edit-medication-set
+          [medicationSetFg]="medicationSetFg"
+          (onCancel)="onCancel(medicationSetFg, i)"
+          (onSave)="onSave(medicationSetFg)"
+        />
+      } @else {
+        <div class="margin-bottom-lg">
+          <app-view-medication-set
+            (onDelete)="onDeleteMedicationSet(i)"
+            (onEdit)="onEditMedicationSet(medicationSetFg)"
+            (onCopy)="onCopyMedicationSet(i)"
+            [data]="form().get(['medication', i]).value"
+            [medicationSetsFormArray]="medicationSetsFormArray()"
+            [index]="i"
+            [editDisabled]="isEditing()"
+          />
+        </div>
+      }
+    </div>
   }
+}
+</div>
 
-  <div class="d-flex justify-content-center mt-4">
-    <button class="w-50 secondary-btn" matButton="filled" (click)="addMedication()">
-      <mat-icon>add</mat-icon> Add Medication
+@if (medicationSetsFormArray()?.hasError('weightSumInvalid') && medicationSetsFormArray()?.touched) {
+  <mat-error class="alert alert-danger" role="alert">
+    The sum of all medication set weights must equal 100%.
+    Current sum: {{ medicationSetsFormArray()?.getError('weightSumInvalid')?.actualSum | number:'1.2-2' }}%
+  </mat-error>
+}
+
+@if (!isEditing() || medicationSetsFormArray()?.controls.length == 0) {
+  <div class="d-flex justify-content-center margin-top-md">
+    <button class="w-50 secondary-btn" matButton="filled" (click)="addMedicationSet(medicationSetsFormArray())">
+      <mat-icon>add</mat-icon>
+      Add New Medication Set
     </button>
   </div>
-</div>
+}

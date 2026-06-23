@@ -9,7 +9,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
 import {US_STATES_LIST} from '../../../../../../constants/us-states';
 import {AsyncPipe} from '@angular/common';
-import {map, Observable, of, startWith, tap} from 'rxjs';
+import {map, Observable, of, startWith} from 'rxjs';
 import {ChipsPipe} from '../../../../pipes/chips-pipe';
 import {UsState} from '../../../../models/us-state';
 
@@ -42,7 +42,6 @@ export class LocationFormComponent implements OnInit{
 
   ngOnInit() {
     this.filteredStates = this.form().get(['patient-location','state'])?.valueChanges.pipe(
-      tap(value => console.log(value)),
       startWith(''),
       map(value => (typeof value === 'string' ? value : value.name)),
       map(display => (display ? this._filter(display) : this.US_STATES_LIST.slice()))

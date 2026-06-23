@@ -13,7 +13,7 @@ import { MatIcon } from "@angular/material/icon";
 export interface SummaryOption {
   label: string;
   ruleId: string;
-  control: 'checkbox' | 'range' | 'weighting' | 'location' | 'concept' | 'relative-time-range';
+  control: 'checkbox' | 'range' | 'weighting' | 'location' | 'concept' | 'relative-time-range' | 'tribal-affiliation' | 'prevalence';
   value: any;
 }
 
@@ -32,9 +32,6 @@ export class DefaultsSummaryComponent {
   reviewOnly = input<boolean>(false);
 
   onCustomize = output<void>();
-  confirmDefaults = output<boolean>();
-
-  confirmChecked = false;
 
   // Computed signal that processes options from form value
   options = computed(() => {
@@ -53,11 +50,6 @@ export class DefaultsSummaryComponent {
 
   handleCustomizeClick() {
     this.onCustomize.emit();
-  }
-
-  handleConfirmChange(checked: boolean) {
-    this.confirmChecked = checked;
-    this.confirmDefaults.emit(checked);
   }
 
   private toSummaryOption(rule: Option, rawValue: unknown): SummaryOption {

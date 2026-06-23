@@ -65,6 +65,7 @@ export class ConceptFormComponent implements AfterViewInit {
   option = input.required<Option>();
   formFieldHints = input<{ DISPLAY: string; CODE: string; SYSTEM: string; SYSTEM_URI: string }>();
   searchTermHint = input<string>('');
+  hasPresetsRendered = input<boolean>(false);
   readonly SYSTEM_LIST = SYSTEM_LIST
   readonly LABELS = UI_CONSTANTS.COHORT_GENERATION.CONCEPT_LABELS;
   defaultSystemUri: string = '';
@@ -90,13 +91,21 @@ export class ConceptFormComponent implements AfterViewInit {
     if(fromPreset){
       data = {fromPreset: fromPreset};
     }
-    else{
+    else {
       const selectedSystemUri = this.form().get([`${this.option().ruleId}`, 'systemUri']).value;
       const selectedSystem = SYSTEM_LIST.find(system => system.uri === selectedSystemUri);
-      data = {fromPreset: fromPreset, selectedSystem: selectedSystem, systemList: SYSTEM_LIST, searchTermHint: this.searchTermHint()};
+      data = {
+        fromPreset: fromPreset,
+        selectedSystem: selectedSystem,
+        systemList: SYSTEM_LIST,
+        searchTermHint: this.searchTermHint(),
+        hasPresetsRendered: this.hasPresetsRendered()};
     }
-    const selectedSystem = SYSTEM_LIST.find(system => system.uri === this.defaultSystemUri);
+
+    const selectedSystem = SYSTEM_LIST.find(system => system.uri === this.defaultSystemUri)
+
     data.selectedSystem = selectedSystem;
+
     openConceptFinderModal(this.dialog, data).subscribe({
       next: (concept: Concept) => {
         if(concept){

@@ -49,6 +49,15 @@
           [form]="form().controls[`custom_${index()}`] | asFormGroup">
         </app-relative-time-range>
       </div>
+    } @else if (option.control == "tribal-affiliation") {
+      <div class=line-item>
+        <app-tribal-affiliation
+          [option]="option"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup"
+          [originalFrom]="originalFrom().controls[`custom_${index()}`] | asFormGroup"
+        >
+        </app-tribal-affiliation>
+      </div>
     }
     <div class="margin-top-lg margin-bottom-md">
       <mat-divider/>

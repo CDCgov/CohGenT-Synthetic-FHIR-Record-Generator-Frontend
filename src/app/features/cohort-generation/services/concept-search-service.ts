@@ -128,7 +128,8 @@ export class ConceptSearchService {
       display: item.name || '',
       system: systemLabel,
       systemUri: item.system || '',
-      code: item.code || ''
+      code: item.code || '',
+      hasPresets: item.hasPresets,
     };
   }
 

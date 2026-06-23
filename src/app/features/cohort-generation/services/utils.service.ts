@@ -96,4 +96,8 @@ export class Utils {
       return control;
     }
   }
+
+  getFormControlsByName(fg: any, nameOrPath: string | string[]) {
+    return fg.get(nameOrPath) as FormArray;
+  }
 }

@@ -11,7 +11,7 @@ mat-header-cell {
 }
 
 .mat-mdc-header-row {
-  background-color: #f5f5f5;
+  background-color: #e0e0e0;
   font-weight: bold;
   font-size: 14px;
   height: 32px;
@@ -20,4 +20,17 @@ mat-header-cell {
 .mat-mdc-row {
   font-size: 14px;
   height: 32px;
+}
+
+.mat-column-display {
+  width: 40%;
+}
+.mat-column-code{
+  width: 10%;
+}
+.mat-column-system{
+  width: 10%;
+}
+.mat-column-dosage{
+  width: 40%;
 }

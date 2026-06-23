@@ -3,7 +3,15 @@
 
   @if (option().control === 'location') {
     <span class="formatted-value margin-left-md">
-      {{ option()?.value?.state?.name }} {{ option()?.value?.city }}
+      @if(option()?.value?.state?.name ){
+        State: {{ option()?.value?.state?.name }}
+      }
+      @if(option()?.value?.city ){
+        City: {{ option()?.value?.city }}
+      }
+      @if(!option()?.value?.state?.name && !option()?.value?.city){
+        No Specific Location Set
+      }
     </span>
   } @else if (option().control === 'concept') {
     @if (option()?.value && (option()?.value?.display || option()?.value?.code)) {
@@ -32,8 +40,8 @@
     } @else {
       <span class="formatted-value">No value recorded</span>
     }
-  } @else if (option().control === 'weighting') {
-    <!-- No value display for weighting -->
+  } @else if (option().control === 'weighting' || option().control === 'tribal-affiliation') {
+<!--    EXPLICITLY Empty because weighting and tribal-affiliation are handled separately in the following block with charts-->
   } @else {
     <span class="formatted-value">{{ option() | summaryValueFormat }}</span>
   }
@@ -56,6 +64,38 @@
           <span class="pct">{{ entry[1] | percent: '1.0-2' }}</span>
         </div>
       }
+    </div>
+  </div>
+}
+
+@if (option().control === 'tribal-affiliation') {
+  <div class="distribution-container" [class.compact]="compact()">
+    @if (option()?.value?.prevalence?.value && option()?.value?.prevalence?.value != 0 && option()?.value?.prevalence?.value !== '0') {
+      <div class="chart-box" [class.compact]="compact()">
+        <canvas #chartCanvas></canvas>
+      </div>
+    }
+
+    <div class="custom-legend" [class.compact]="compact()">
+      <div class="legend-pill" [class.compact]="compact()">
+        @if (option()?.value?.prevalence?.value && option()?.value?.prevalence?.value != 0 && option()?.value?.prevalence?.value !== '0') {
+          <span
+            class="dot"
+            [style.background-color]="getThemeColorFromCSS(0)"
+          ></span>
+        }
+        <span class="name">
+          @if (!option()?.value?.prevalence?.value || option()?.value?.prevalence?.value == 0 || option()?.value?.prevalence?.value === '0') {
+            Prevalence <span class="pct">0%</span>; No Assigned Tribal Affiliations
+          } @else if (option()?.value?.isRandomlyAssigned) {
+            Prevalence: <span class="pct">{{ option()?.value?.prevalence?.value }}%</span>; <span class="pct">Randomly Selected Tribal Affiliation</span>
+          } @else if (option()?.value?.affiliation?.display) {
+            Prevalence: <span class="pct">{{ option()?.value?.prevalence?.value }}%</span>; Set Tribal Affiliation of <span class="pct">{{ option()?.value?.affiliation?.display }}</span>
+          } @else {
+            Prevalence: <span class="pct">{{ option()?.value?.prevalence?.value }}%</span>; Tribal affiliation
+          }
+        </span>
+      </div>
     </div>
   </div>
 }

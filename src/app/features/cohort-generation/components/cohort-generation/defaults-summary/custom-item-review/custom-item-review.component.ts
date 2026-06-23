@@ -39,7 +39,7 @@ export class CustomItemReview implements OnDestroy {
       const canvas = this.chartCanvas();
       const isCompact = this.compact();
 
-      if (opt.control === 'weighting' && canvas) {
+      if ((opt.control === 'weighting' || opt.control === 'tribal-affiliation') && canvas) {
         untracked(() => {
           this.initChart(opt, canvas.nativeElement, isCompact);
         });
@@ -65,17 +65,48 @@ export class CustomItemReview implements OnDestroy {
     const barThickness = isCompact ? 12 : 16;
     const borderRadius = isCompact ? 3 : 4;
 
+    let datasets: any[];
+
+    if (opt.control === 'tribal-affiliation') {
+      // For tribal affiliation, create two datasets: affiliation and no affiliation
+      const prevalenceValue = Number(opt.value?.prevalence?.value) || 0;
+      const noAffiliationValue = 100 - prevalenceValue;
+      const label = opt.value?.isRandomlyAssigned
+        ? 'Random assignment'
+        : opt.value?.affiliation?.display || 'Tribal affiliation';
+
+      datasets = [
+        {
+          label: label,
+          data: [prevalenceValue],
+          backgroundColor: this.getThemeColorFromCSS(0),
+          barThickness: barThickness,
+          borderRadius: borderRadius
+        },
+        {
+          label: 'No affiliation',
+          data: [noAffiliationValue],
+          backgroundColor: this.getThemeColorFromCSS(1),
+          barThickness: barThickness,
+          borderRadius: borderRadius
+        }
+      ];
+    } else {
+      // For weighting, use the existing array format
+      datasets = opt.value.map((item: any, i: number) => ({
+        label: item[0],
+        data: [(Number(item[1]) || 0) * 100],
+        backgroundColor: this.getThemeColorFromCSS(i),
+        barThickness: barThickness,
+        borderRadius: borderRadius
+      }));
+    }
+
     this.chart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: [''],
-        datasets: opt.value.map((item: any, i: number) => ({
-          label: item[0],
-          data: [(Number(item[1]) || 0) * 100],
-          backgroundColor: this.getThemeColorFromCSS(i),
-          barThickness: barThickness,
-          borderRadius: borderRadius
-        }))
+        datasets: datasets
       },
       options: {
         indexAxis: 'y',
