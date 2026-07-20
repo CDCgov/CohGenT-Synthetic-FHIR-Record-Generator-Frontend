@@ -77,7 +77,8 @@
 
               <div class="row margin-top-md">
                 <div class="field-label">{{ LABELS.SELECT_OUTPUT_FORMAT }}
-                  <mat-icon [matTooltip]="LABELS.SELECT_OUTPUT_FORMAT_TOOLTIP" class="tooltip-icon ml-2">info_outline</mat-icon>
+                  <mat-icon [matTooltip]="LABELS.SELECT_OUTPUT_FORMAT_TOOLTIP" class="tooltip-icon ml-2">info_outline
+                  </mat-icon>
                 </div>
                 <div class="description margin-bottom-md">{{ LABELS.SELECT_OUTPUT_FORMAT_INSTRUCTIONS }}</div>
                 <div class="margin-top-sm">
@@ -98,11 +99,21 @@
         <button matButton="filled" type="submit" class="w-full secondary-btn">
           {{ LABELS.BTN_LABELS.GENERATE_COHORT }}
         </button>
+
+        <app-error-message componentName="generate-cohort-component"></app-error-message>
+
       </mat-card-content>
     </mat-card>
   </form>
 
-  @if (cohortGeneratedSuccessfully()) {
+  @if (isLoading()) {
+    <mat-card appearance="outlined" class="margin-top-lg">
+      <div class="centered-content label">
+      Generating Cohort. Please wait <span class="loading-ellipsis margin-left-ls">
+    </span>
+      </div>
+    </mat-card>
+  } @else if (cohortGeneratedSuccessfully()) {
     <mat-card appearance="outlined" class="margin-top-lg">
       <div class="flex-row">
         <div class="col">

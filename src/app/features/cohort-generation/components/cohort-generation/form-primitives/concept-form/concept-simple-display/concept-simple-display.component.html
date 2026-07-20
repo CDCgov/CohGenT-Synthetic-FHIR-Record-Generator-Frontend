@@ -1,0 +1,27 @@
+<div class="flex-row margin-top-md">
+  <div class="results-col">
+    <div class="label">System</div>
+    @if (hasRequiredValues()) {
+      <div class="concept-value-display">{{ conceptValue() | systemStr }}</div>
+    }
+  </div>
+  <div class="results-col">
+    <div class="label">Code</div>
+    @if (hasRequiredValues()) {
+      <div class="concept-value-display">{{ conceptValue()?.code }}</div>
+    }
+  </div>
+  <div class="results-col">
+    <div class="label">Display</div>
+    @if (hasRequiredValues()) {
+      <div class="concept-value-display">{{ conceptValue()?.display }}</div>
+    }
+  </div>
+</div>
+@if (!hasRequiredValues() && showEmptyMessage()) {
+  <div class="description-italic horizontal-center">
+    {{ emptyMessage() }}
+  </div>
+}
+
+{{ errorMessage() }}

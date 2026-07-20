@@ -7,6 +7,7 @@ import {Concept} from '../../models/cohort-generation-request-body';
 import {HttpClient} from '@angular/common/http';
 import {EnvironmentHandlerService} from '../../../../config/environment-handler.service';
 import {SharedHttpErrorService} from '../../../../shared/services/shared-http-error.service';
+import {UI_CONSTANTS} from '../../../../constants/ui-constants';
 
 export type PatientTribalAffiliationForm = {
   isRandomlyAssigned: FormControl<boolean>;
@@ -14,17 +15,23 @@ export type PatientTribalAffiliationForm = {
   prevalence: FormGroup<PrevalenceForm>;
 };
 
+/**
+ * Helper service for managing tribal affiliation forms with prevalence and random assignment.
+ * Handles conditional validation and fetches tribal affiliation concepts from the API.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class TribalAffiliationHelperService {
   private fb = inject(FormBuilder).nonNullable as NonNullableFormBuilder;
   private prevalenceHelperService = inject(PrevalenceHelperService);
+  readonly DEFAULT_SERVER_ERROR_MSG = UI_CONSTANTS.ERROR_MSG.DEFAULT_SERVER_ERROR_MSG;
 
   private http = inject(HttpClient);
   private environmentHandler = inject(EnvironmentHandlerService);
   private sharedHttpErrorService = inject(SharedHttpErrorService);
 
+  /** Creates a tribal affiliation FormGroup with conditional validation based on prevalence and random assignment. */
   getPatientTribalAffiliationFg(option: TribalAffiliationOption): FormGroup<PatientTribalAffiliationForm> {
     const fg = this.fb.group<PatientTribalAffiliationForm>({
       isRandomlyAssigned: this.fb.control(true),
@@ -37,6 +44,7 @@ export class TribalAffiliationHelperService {
     return fg;
   }
 
+  /** Sets up subscriptions to manage control states based on prevalence and random assignment values. */
   private setValueChangeSubscriptions(fg: FormGroup<PatientTribalAffiliationForm>): void {
     const isRandomlyAssignedCtrl = fg.controls.isRandomlyAssigned;
     const affiliationCtrl = fg.controls.affiliation;
@@ -56,6 +64,7 @@ export class TribalAffiliationHelperService {
     );
   }
 
+  /** Updates affiliation control state and validation. */
   private updateAffiliationControl(
     isRandomlyAssignedCtrl: FormControl<boolean>,
     affiliationCtrl: FormControl<Concept | null>,
@@ -92,15 +101,16 @@ export class TribalAffiliationHelperService {
     affiliationCtrl.updateValueAndValidity({ emitEvent: false });
   }
 
-  private cachedTribalAffiliationList = signal<Concept[] | null>(null); // Cached as a signal, fetched only once
+  private cachedTribalAffiliationList = signal<Concept[] | null>(null);
 
+  /** Fetches and caches tribal affiliation concepts from the API (fetched only once). */
   getTribalAffiliationList(): Signal<Concept[]> {
     if (!this.cachedTribalAffiliationList()) {
       this.http.get(`${this.environmentHandler.getBaseApiURL()}valuesets/tribal-affiliation`).pipe(
         map((response: any) => response.results),
         catchError(error => {
           console.error(error);
-          this.sharedHttpErrorService.setErrorMessage("Error Receiving Data From Service.");
+          this.sharedHttpErrorService.setErrorMessage(this.DEFAULT_SERVER_ERROR_MSG);
           return throwError(() => error);
         })
       ).subscribe((data: Concept[]) => this.cachedTribalAffiliationList.set(data));

@@ -1,10 +1,11 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, map, throwError} from 'rxjs';
+import {Observable, map} from 'rxjs';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {EnvironmentHandlerService} from '../../../config/environment-handler.service';
-import {SharedHttpErrorService} from '../../../shared/services/shared-http-error.service';
 import {catchError} from 'rxjs/operators';
+import {SharedHttpErrorService} from '../../../shared/services/shared-http-error.service';
 
+/** API response structure for preset observation values. */
 export interface PresetValuesResponse {
   parameters: {
     code: string;
@@ -20,11 +21,13 @@ export interface PresetValuesResponse {
   }>;
 }
 
+/** Query parameters for fetching preset observation values. */
 export interface PresetQueryParams {
   code: string;
   system: string;
 }
 
+/** Transformed preset observation value with numeric values converted to strings. */
 export interface PresetLabObservationValue {
   code: string;
   system: string;
@@ -35,6 +38,7 @@ export interface PresetLabObservationValue {
   quantityUnit?: string;
 }
 
+/** Service for fetching preset lab observation value ranges from the API. */
 @Injectable({
   providedIn: 'root',
 })
@@ -45,6 +49,7 @@ export class PresetLabObservationValuesService {
   private environmentHandler = inject(EnvironmentHandlerService);
   private sharedHttpErrorService = inject(SharedHttpErrorService);
 
+  /** Fetches preset value ranges for a specific lab observation by LOINC code. */
   getObservationValuePresets(params: PresetQueryParams): Observable<PresetLabObservationValue[]> {
     const queryParams = new HttpParams()
       .set('code', params.code)
@@ -65,10 +70,8 @@ export class PresetLabObservationValuesService {
           quantityUnit: result.quantityUnit
         }))
       ),
-      catchError(error => {
-        this.sharedHttpErrorService.setErrorMessage("Error loading observation value presets.");
-        return throwError(() => error);
-      })
+      catchError(error => this.sharedHttpErrorService.handleError(error, undefined, 'observations-component'))
     );
   }
+
 }

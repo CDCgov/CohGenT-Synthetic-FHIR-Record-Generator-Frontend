@@ -30,8 +30,12 @@
     <div>
       Onset(+) {{ eventSetDataView().onset.onsetPlus }} {{ eventSetDataView().onset.units }}
       @if (eventSetDataView().onset.repeat) {
-        Repeat Every
-        {{ eventSetDataView().onset.repeatEvery }} {{ eventSetDataView().onset.repeatEveryUnits }}
+        Repeat Every {{ eventSetDataView().onset.repeatEvery }} {{ eventSetDataView().onset.repeatEveryUnits }}
+        @if (eventSetDataView().onset.endFor === 'For') {
+          Until {{ eventSetDataView().onset.untilValue }} {{ eventSetDataView().onset.untilUnit }}
+        } @else {
+          Until End
+        }
       }
     </div>
     @if(eventSetDataView().diagnosticPanel){

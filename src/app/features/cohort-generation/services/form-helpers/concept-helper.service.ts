@@ -1,12 +1,17 @@
 import {inject, Injectable} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn} from '@angular/forms';
 
+/**
+ * Helper service for creating and managing medical concept FormGroups.
+ * Handles concept forms with system, code, display, and custom systemUri fields.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class ConceptHelperService {
   private fb = inject(FormBuilder);
 
+  /** Creates a concept FormGroup with validation and system change handling. */
   buildFg(defaultSystem?:{ label: string, uri: string | null } | null) : FormGroup{
     let fg = this.fb.group({
       display:  new FormControl(),
@@ -21,6 +26,7 @@ export class ConceptHelperService {
     return fg;
   }
 
+  /** Validates that either code or display is provided. */
   codeOrDisplayValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const formGroup = control as FormGroup;
@@ -33,6 +39,7 @@ export class ConceptHelperService {
     };
   }
 
+  /** Enables/disables systemUri field based on whether 'other' system is selected. */
   private subscribeToSystemValueChanges(fg: FormGroup) {
     fg?.get('system')?.valueChanges.subscribe((value) => {
       if (value === 'other') {

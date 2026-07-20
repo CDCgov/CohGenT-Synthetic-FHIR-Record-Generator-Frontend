@@ -1,7 +1,11 @@
 import {inject, Injectable} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators} from '@angular/forms';
-import {Option, RangeOption} from '../../models/use-case';
+import {RangeOption} from '../../models/use-case';
 
+/**
+ * Helper service for managing numeric range forms with dual slider/input controls.
+ * Handles min/max ranges with bidirectional synchronization and validation.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -9,6 +13,7 @@ export class RangeHelperService {
   private isFieldUpdating: boolean;
   private fb = inject(FormBuilder);
 
+  /** Creates a range FormGroup with synchronized slider and input controls for min/max values. */
   getRangeFg(option: RangeOption): FormGroup {
     const [minValue, maxValue] = option.defaultValues;
     const [minBound, maxBound] = option.minMax;
@@ -31,6 +36,7 @@ export class RangeHelperService {
     this.setValueChangeSubscriptions(fg);
     return fg;
   }
+  /** Sets up bidirectional synchronization between sliders and inputs, preventing infinite loops. */
   private setValueChangeSubscriptions(fg: FormGroup) {
     if (!fg) return;
     const minControl = fg.get('min');
@@ -81,9 +87,6 @@ export class RangeHelperService {
       });
 
     maxControl?.valueChanges
-      .pipe(
-        //     takeUntil(this.destroy$)
-      )
       .subscribe(value => {
         if (this.isFieldUpdating) return;
 
@@ -97,6 +100,7 @@ export class RangeHelperService {
   }
 
 
+  /** Validates that min value is less than or equal to max value. */
   private minSmallerThanMax(control: AbstractControl): ValidationErrors | null {
     const min = control.get('min')?.value;
     const max = control.get('max')?.value;

@@ -4,6 +4,7 @@
 
 <mat-dialog-content>
   @if (fromPreset) {
+    <app-error-message componentName="concept-finder-modal"></app-error-message>
     <app-concept-select
       (onSelectConcept)="onSelectAndApplyConcept($event)"
     ></app-concept-select>

@@ -1,3 +1,7 @@
+/**
+ * Component for managing additional clinical data event sets (observations, procedures, radiology reports).
+ * Handles creation, editing, deletion, and validation of event sets in the cohort generation workflow.
+ */
 import {Component, computed, inject, input, signal} from '@angular/core';
 import {
   AbstractControl,
@@ -31,22 +35,35 @@ import {UI_CONSTANTS} from '../../../../../constants/ui-constants';
   styleUrl: './additional-data.component.scss',
 })
 export class AdditionalDataComponent {
+  /** Parent form group containing the additional data form array */
   form = input.required<FormGroup>();
+
+  /** Tracks whether any event set is currently being edited */
   isEditing = signal(false);
+
+  /** Stores form values before editing to enable cancel functionality */
   tempFormValueStorage = signal<any | null>(null);
+
+  /** UI constants for labels and messages */
   readonly UI_CONSTANTS = UI_CONSTANTS.COHORT_GENERATION.ADDITIONAL_DATA;
 
+  /** Service for managing additional data form operations */
   additionalDataHelperService = inject(AdditionalDataHelperService);
+
+  /** Service for managing stepper navigation locks */
   stepLockTracker = inject(StepperLockTracker);
 
+  /** Computed signal returning the additional data form array */
   additionalDataFormArray = computed(() =>
     this.form().get('additional-data-time-series') as FormArray
   );
 
+  /** Type guard to check if a control is a FormGroup */
   isFormGroup(control: AbstractControl): control is FormGroup {
     return control instanceof FormGroup;
   }
 
+  /** Adds a new event set to the form array and enters edit mode */
   addEvent(additionalDataFormArray: FormArray) {
     this.stepLockTracker.setStepperLock(true, this.UI_CONSTANTS.FINISH_EDITING_ERROR_MSG);
     this.additionalDataFormArray().updateValueAndValidity();
@@ -70,11 +87,13 @@ export class AdditionalDataComponent {
     }
   }
 
+  /** Removes an event set from the form array */
   onDeleteEventSet(index: number) {
     this.additionalDataFormArray().controls.splice(index, 1);
     this.additionalDataFormArray().updateValueAndValidity();
   }
 
+  /** Enters edit mode for an event set, storing current values for potential cancel */
   onEditEventSet(additionalDataFg : FormGroup) {
     this.tempFormValueStorage.set(JSON.parse(JSON.stringify(additionalDataFg.value)));
     additionalDataFg.get('isInEditMode').patchValue(true, {emitEvent: false});
@@ -82,6 +101,7 @@ export class AdditionalDataComponent {
     this.isEditing.set(true);
   }
 
+  /** Saves changes to an event set and exits edit mode if valid */
   onSave(additionalDataFg: FormGroup) {
     this.additionalDataFormArray().updateValueAndValidity();
     if(additionalDataFg.valid){
@@ -92,6 +112,7 @@ export class AdditionalDataComponent {
     }
   }
 
+  /** Cancels editing, either deleting new event sets or restoring previous values */
   onCancel(additionalDataFg: FormGroup, index: number) {
     // if the last element is canceled, just delete it
     if(additionalDataFg.get('deleteOnCancel').value == true) {

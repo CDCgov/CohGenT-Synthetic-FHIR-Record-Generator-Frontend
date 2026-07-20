@@ -100,7 +100,8 @@ export const UI_CONSTANTS = {
       CLINICAL_DATA_TOOLTIPS: {
         LAB_RESULT: "Add a Lab Result using the U.S. Core 6.1.0 Laboratory Result Observation Profile",
         PROCEDURE: 'Add a Procedure using the U.S. Core 6.1.0 Procedure Profile',
-        RADIOLOGY_REPORT: "Add a Radiology Report using the U.S. Core 6.1.0 DiagnosticReport for Report and Note Exchange Profile with a category of radiology"
+        RADIOLOGY_REPORT: "Add a Radiology Report using the U.S. Core 6.1.0 DiagnosticReport for Report and Note Exchange Profile with a category of radiology",
+        RADIOLOGY_REPORT_AND_PROCEDURE_DISABLED_MESSAGE: "Cannot be added to a Lab Panel"
       },
       SEARCH_TERM_HINTS: {
         DIAGNOSTIC_PANEL_CONCEPT: 'ex: "24323-8" (by Code) or "Comprehensive metabolic 2000 panel" (by Name)',
@@ -111,6 +112,7 @@ export const UI_CONSTANTS = {
       EVENT_SET_SETTINGS: {
         DIAGNOSTIC_REPORT_SETTINGS: {
           CHECKBOX_LBL: "Create Clinical Data Set as a Lab Panel?",
+          CHECKBOX_DISABLED_LABEL: "Cannot be enabled while clinical data set includes non-observations",
           INSTRUCTIONS: "Select this to create this clinical data set as a lab panel. All members of the clinical data set should be members of the specified panel. If selected, provide a concept for the panel.",
           TOOLTIP: "Lab panels are collected in a FHIR Diagnostic Report. A Diagnostic Report is a formal group of observations or procedures.",
         }
@@ -146,6 +148,11 @@ export const UI_CONSTANTS = {
     }
   },
 
+  MENU_SECTION : {
+    SAVE_COHORT_SETTINGS: "Save Cohort Settings",
+    SAVE_COHORT_SETTINGS_TOOLTIP: "Save the settings for this cohort configuration as a file that can be loaded and revisited later."
+  },
+
   ERROR_MSG: {
     REQUIRED: "Value is Required",
     UNTIL_DATE_MUST_BE_AFTER_THE_END_DATE: "Until Date must be after the End Date",
@@ -154,7 +161,8 @@ export const UI_CONSTANTS = {
     LESS_THAN_OR_EQUAL_TO: "Must be less than or equal to",
     GREATER_THAN_OR_EQUAL_TO: "Must be greater than or equal to",
     GREATER_THAN: "Must be greater than",
-    POSITIVE_REQUIRED: "Value must be positive"
+    POSITIVE_REQUIRED: "Value must be positive",
+    DEFAULT_SERVER_ERROR_MSG: "Server Error Detected. Contact Support.",
   }
 
 }

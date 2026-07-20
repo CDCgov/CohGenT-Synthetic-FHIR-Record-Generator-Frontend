@@ -3,7 +3,10 @@ import { WeightingOption} from '../../models/use-case';
 import { CategoryTuple } from '../../models/use-case';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
-
+/**
+ * Helper service for managing weighting distribution forms with proportional adjustment.
+ * Handles both 2-value (slider-based) and multi-value (lockable) weighting scenarios.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -11,13 +14,15 @@ export class WeightingHelperService {
   private fb = inject(FormBuilder);
   private isUpdating: boolean = false;
   private _units = signal<'decimal' | 'percent'>('percent');
+  /** Read-only signal indicating current unit mode (decimal or percent). */
   public readonly units = this._units.asReadonly();
 
+  /** Sets the unit mode for weight values (decimal 0-1 or percent 0-100). */
   public setUnits(units: 'decimal' | 'percent') {
     this._units.set(units);
   }
 
-  /** Build a FormGroup for a given weighting option */
+  /** Builds a FormGroup for weighting with either 2-value slider or multi-value lockable controls. */
   buildFg(option: WeightingOption): FormGroup {
     const fg = this.fb.group({});
     const values = option.defaultValues.values;
@@ -60,18 +65,21 @@ export class WeightingHelperService {
   }
 
   /**
-   adjustProportionally follows the following algorithm documented on our wiki page:
-   https://wiki.gtri.gatech.edu/pages/viewpage.action?pageId=555849728&spaceKey=CDCTTS&title=Weighting%2BDistribution%2BFormula
-
-   on change of value for field n
-   change of n = previous value of n - new value of n
-   sum = sum of all other fields not n
-   for each other field m
-   relative distribution = current value of m / sum
-   change to make to m = change of n x(times) relative distribution
-   new value of m = current value of m + change to make to m
-
-   Note that the algorithm above does not account for edge cases
+   * Calculates proportionally adjusted weights when one value changes.
+   *
+   * Algorithm:
+   * - change of n = previous value of n - new value of n
+   * - sum = sum of all other unlocked fields (not n)
+   * - for each other unlocked field m:
+   *   - relative distribution = current value of m / sum
+   *   - change to make to m = change of n × relative distribution
+   *   - new value of m = current value of m + change to make to m
+   *
+   * Edge cases handled:
+   * - Locked fields retain their values
+   * - If locked + new value = 100%, unlocked fields set to 0
+   * - If all adjustable values are 0, distribute remainder equally
+   * - Rounding corrections ensure total = 100%
    */
   getAdjustedWeights(
     oldInputs: WeightingInputItem[],
@@ -175,9 +183,7 @@ export class WeightingHelperService {
     return newInputs;
   }
 
-  /* -------------------------------------------------------------
-   * Subscription handling for the slider / input pair
-   * ------------------------------------------------------------- */
+  /** Sets up bidirectional synchronization between slider and two input controls. */
   private setWeightingValueChangeSubscriptions(optionGroup: FormGroup) {
     if (!optionGroup) return;
 
@@ -229,7 +235,7 @@ export class WeightingHelperService {
       });
   }
 
-  /** Convert a value from one input to its counterpart */
+  /** Calculates the complementary value (e.g., if input is 30%, returns 70%). */
   private calculateCorrespondingValue(inputValue: number): number | null {
     if (inputValue < 0) {
       return null;
@@ -241,7 +247,7 @@ export class WeightingHelperService {
     return 100 - inputValue;
   }
 
-  /** Utility – round to a fixed number of decimal places */
+  /** Rounds a number to specified decimal places (default 2). */
   private roundToDecimalPlaces(num: number, decimalPlaces = 2): number {
     const factor = Math.pow(10, decimalPlaces);
     return Math.round(num * factor) / factor;

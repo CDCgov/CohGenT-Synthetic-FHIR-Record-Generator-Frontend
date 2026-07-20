@@ -1,9 +1,13 @@
 import {inject, Injectable} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors} from '@angular/forms';
-import {Option, RelativeTimeRangeOption} from '../../models/use-case';
+import { RelativeTimeRangeOption} from '../../models/use-case';
 import {toDays} from '../../../../shared/functions/time-to-days-conversion.function';
 import {TIME_PERIOD_UNIT_LIST} from '../../../../constants/app-constants';
 
+/**
+ * Helper service for managing relative time range forms with start/end periods.
+ * Handles time ranges with automatic unit conversion and validation.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -11,6 +15,7 @@ export class RelativeTimeRangeHelperService {
   private fb = inject(FormBuilder);
   readonly TIME_PERIOD_UNIT_LIST = TIME_PERIOD_UNIT_LIST
 
+  /** Creates a relative time range FormGroup with start/end value/unit controls and validators. */
   buildFg(option?: RelativeTimeRangeOption) {
     return new FormGroup({
       'start': this.fb.group({
@@ -24,6 +29,7 @@ export class RelativeTimeRangeHelperService {
     }, { validators: [this.startBeforeEndValidator, this.valueGreaterThanZeroValidator] });
   }
 
+  /** Validates that start time is before or equal to end time (converted to days for comparison). */
   startBeforeEndValidator(control: AbstractControl): ValidationErrors | null {
     const start = control.get('start')?.value;
     const end = control.get('end')?.value;
@@ -40,6 +46,7 @@ export class RelativeTimeRangeHelperService {
     }
   }
 
+  /** Validates that start and end values are non-negative. */
   valueGreaterThanZeroValidator(control: AbstractControl): ValidationErrors | null {
     const start = control.get('start')?.value;
     const end = control.get('end')?.value;
@@ -57,6 +64,7 @@ export class RelativeTimeRangeHelperService {
     return null;
   }
 
+  /** Converts default day values to appropriate units (days/weeks/months/years) based on magnitude. */
   private getValuesFromDefault(option: RelativeTimeRangeOption, fgName: string, fcName: string) {
     const startValue = option.defaultValues.start;
     const endValue = option.defaultValues.end;

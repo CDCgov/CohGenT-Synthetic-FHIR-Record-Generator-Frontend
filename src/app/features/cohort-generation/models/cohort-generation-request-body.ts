@@ -4,46 +4,108 @@ import {UseCaseMetadata} from './use-case-metadata';
 import {toDays} from '../../../shared/functions/time-to-days-conversion.function';
 import {Utils} from '../services/utils.service';
 
+/**
+ * Represents a user's response to a custom form field.
+ * Maps a rule ID to the user-provided value for that rule.
+ */
 export interface UserResponse {
+  /** The unique identifier of the form rule this response corresponds to */
   ruleId: string;
+  /** The user-provided value. Type varies based on the control type (checkbox, range, weighting, etc.) */
   value: any; //TODO add a more specific type for type handling
 }
 
+/**
+ * Defines the time period for cohort generation.
+ */
 interface EventPeriod {
+  /** Start date of the cohort generation period */
   start: string,
+  /** End date of the cohort generation period */
   end: string,
+  /** Until date - the latest date for which data should be generated */
   until: string
 }
 
+/**
+ * Represents a medical concept from a standardized terminology system (e.g., SNOMED, LOINC, RxNorm).
+ * Used for medications, procedures, observations, and other clinical concepts.
+ */
 export interface Concept {
+  /** Human-readable display name of the concept */
   display: string;
+  /** Short name of the terminology system (e.g., "SNOMED", "LOINC") */
   system: string;
+  /** Optional full URI of the terminology system (e.g., "http://snomed.info/sct") */
   systemUri?: string;
+  /** The code identifying this concept within the system */
   code: string;
+  /** Optional flag indicating if this concept has preset values available */
   hasPresets?: boolean;
+  /** Optional domain classification of the concept (e.g., "Drug", "Procedure", "Measurment") */
+  domain?: string
 }
 
+/**
+ * Represents a list of medications with an associated probability weight.
+ */
 export interface MedicationSet{
+  /** Probability weight (0-1 decimal) that a patient will receive this medication set */
   weight: number;
+  /** Array of medications included in this set */
   medications: Medication[];
 }
 
+/**
+ * Represents a single medication with its dosage and concept information.
+ */
 export interface Medication {
+  /** Dosage instruction as a string (e.g., "10mg twice daily") */
   dosage: string;
+  /** The medical concept identifying this medication */
   codeableConcept: Concept;
 }
 
+/**
+ * Transforms hierarchical form data into the API request body format required by the backend.
+ * Acts as a data transformation layer between the UI form structure and the cohort generation API.
+ *
+ * This class is instantiated in the Form Manager Component's onSubmit() method and performs
+ * the following transformations:
+ * - Converts percentage values to decimals
+ * - Converts time ranges with units to total days
+ * - Extracts and structures medication sets with weights
+ * - Processes event sets with timing and entries
+ * - Builds user responses from custom form fields
+ *
+ */
 export class CohortGenerationRequestBody {
+  /** Unique identifier of the selected use case */
   useCaseId: string;
+  /** Number of synthetic patients to generate */
   count: number;
+  /** Array of user responses to custom form fields */
   userResponses: UserResponse[];
+  /** Random seed for reproducible cohort generation */
   seed: number;
+  /** Time period configuration for the cohort */
   eventPeriod: EventPeriod;
+  /** Optional array of medication sets with probability weights */
   medicationSets?: MedicationSet[];
+  /** Optional array of event sets containing lab results, procedures, and radiology reports */
   eventSets?: any[];
+  /** Desired output format (e.g., "FHIR", "CSV") */
   outputFormat: string;
 
-
+  /**
+   * Constructs a new CohortGenerationRequestBody by transforming form data into API format.
+   *
+   * @param form - The complete FormGroup containing all cohort generation form data
+   * @param useCase - The use case definition with form rules and configuration
+   * @param useCaseMetadata - Cohort metadata including name and time period (start, end, until)
+   * @param units - Unit system for weights ("percent" for 0-100, "decimal" for 0-1)
+   * @param utils - Utility service for helper functions like recursive form value extraction
+   */
   constructor(form: any, useCase: UseCase, useCaseMetadata: UseCaseMetadata, units: "percent" | "decimal", private utils: Utils) {
     this.seed = form.get(['step_5', 'generate', 'seed']).value;
     this.outputFormat = form.get(['step_5', 'generate', 'outputFormat']).value;
@@ -82,6 +144,18 @@ export class CohortGenerationRequestBody {
     this.userResponses = userResponses;
   }
 
+  /**
+   * Transforms custom form field values into UserResponse objects based on control type.
+   * Handles different control types: checkbox, range, weighting, location, concept,
+   * relative-time-range, and tribal-affiliation.
+   *
+   * @param formGroup - The FormGroup containing the custom field controls
+   * @param option - The option definition specifying the control type and configuration
+   * @param units - Unit system for weight conversions ("percent" or "decimal")
+   * @returns Array of UserResponse objects containing the transformed field values
+   *
+   * @private
+   */
   private getCustomFieldsResponses(formGroup: FormGroup, option: Option, units: "percent" | "decimal"): UserResponse[] {
     const userResponses: UserResponse[] = [];
 
@@ -107,7 +181,7 @@ export class CohortGenerationRequestBody {
         const fg = formGroup.get(key) as FormGroup;
 
         const values = option.defaultValues.values.map((categoryTuple: CategoryTuple, index: number) => {
-          const controlValue = fg.controls[index].value;
+          const controlValue = fg.controls[index].getRawValue();
           let weightValue: number;
 
           // Check if the control value is an object (nested FormGroup)
@@ -205,12 +279,36 @@ export class CohortGenerationRequestBody {
         };
         userResponses.push(response);
       }
+      else if (option.control === 'occupation'){
+        const fg = formGroup.get(key) as FormGroup;
+        const isRandomlyAssigned = fg.controls['isRandomlyAssigned'].value;
+        let value: { occupationCode: string | null } = { occupationCode: null };
+
+        if (!isRandomlyAssigned && fg.controls['occupationConcept'].value) {
+          value = { occupationCode: fg.controls['occupationConcept'].value.code };
+        }
+
+        const response: UserResponse = {
+          ruleId: option.ruleId,
+          value: value
+        };
+        userResponses.push(response);
+      }
     });
 
     return userResponses;
   }
 
 
+  /**
+   * Transforms medication FormArray into structured MedicationSet objects.
+   * Converts weight percentages to decimals and extracts medication details.
+   *
+   * @param fgArray - FormArray containing medication set form groups
+   * @returns Array of MedicationSet objects with weights and medications
+   *
+   * @private
+   */
   private getMedicationSets(fgArray: FormArray): MedicationSet[] {
     return fgArray.controls.map(fgGroup => {
       // Get the weight value and convert from percentage to decimal
@@ -226,6 +324,15 @@ export class CohortGenerationRequestBody {
     });
   }
 
+  /**
+   * Extracts medication details from a FormArray of medication controls.
+   * Builds Medication objects with concept information and dosage.
+   *
+   * @param medicationsArray - FormArray containing individual medication form controls
+   * @returns Array of Medication objects with concept and dosage information
+   *
+   * @private
+   */
   private getMedications(medicationsArray: FormArray): Medication[] {
     return medicationsArray.controls.map(medicationControl => {
       const code = medicationControl.get(['concept', 'code'])?.value;
@@ -239,6 +346,15 @@ export class CohortGenerationRequestBody {
     });
   }
 
+  /**
+   * Processes event sets data including lab observations, procedures, and radiology reports.
+   * Extracts raw form values (including disabled controls) and structures them for the API.
+   *
+   * @param fg - FormGroup containing event sets data
+   * @returns Array of event set objects with timing, entries, and diagnostic report information
+   *
+   * @private
+   */
   private getEventSetsData(fg: FormGroup) {
     // Extract raw values including disabled controls
     //TODO : Consider refactoring the code so the whole form value is extracted with the line below.
@@ -257,17 +373,40 @@ export class CohortGenerationRequestBody {
       };
     });
   }
-
+  /**
+   * Extracts and transforms event set timing information.
+   * Converts time values with units to days and handles repeat configurations.
+   *
+   * @param eventSetTiming - Raw timing data from the form
+   * @returns Timing object with offset, repeat flag, repeatTiming, and until values in days
+   *
+   * @private
+   */
   private getEventSetTiming(eventSetTiming: any): any {
-    const offset: number | null = toDays(eventSetTiming.onsetPlus?.unit, eventSetTiming.onsetPlus?.value);
-    const repeat: boolean = eventSetTiming.repeat;
+
+    const offset: number | null = toDays(eventSetTiming.onsetPlusFg?.unit, eventSetTiming.onsetPlusFg?.value);
+    const repeat: boolean = eventSetTiming.repeatFg.repeat;
     if(!repeat){
-      return { offset: offset, repeat: repeat }
+      return { offset: offset, repeat: repeat };
     }
-    const repeatTiming: number | null = toDays(eventSetTiming.every?.unit, eventSetTiming.every?.value);
-    return {offset: offset, repeat: repeat, repeatTiming: repeatTiming}
+
+    const repeatTiming: number | null = toDays(eventSetTiming.repeatFg.every?.unit, eventSetTiming.repeatFg.every?.value);
+    let untilTiming: number | null = null;
+    if (eventSetTiming.untilFg.endFor.toLowerCase() === 'for') {
+      untilTiming = toDays(eventSetTiming.untilFg?.unit, eventSetTiming.untilFg?.value);
+    }
+    return {offset: offset, repeat: repeat, repeatTiming: repeatTiming, until: untilTiming};
   }
 
+  /**
+   * Builds event set entries from lab observations, procedures, and radiology reports.
+   * Each entry includes a type and associated concept information.
+   *
+   * @param value - Raw event set data containing labObservations, procedures, and radiologyList
+   * @returns Array of entry objects with type, codeableConcept, and optional value
+   *
+   * @private
+   */
   private getEventSetEntries(value: any): any {
     const entry: any[] = [];
 
@@ -302,6 +441,15 @@ export class CohortGenerationRequestBody {
     return entry;
   }
 
+  /**
+   * Transforms lab observation values based on their type (string or quantity).
+   * For string types, returns value/weight pairs. For quantity types, returns min/max/unit.
+   *
+   * @param value - Raw value data with valueType and valueArray
+   * @returns Transformed value object or null if valueType is unrecognized
+   *
+   * @private
+   */
   private getValue(value: any) {
     if (value.valueType === 'string') {
       const valueWeights = value.valueArray.map((el: any) => {

@@ -1,3 +1,7 @@
+/**
+ * Component for displaying a summary of form rule options and their configured values.
+ * Allows users to review settings and customize them before cohort generation.
+ */
 import {
   Component,
   input,
@@ -13,7 +17,7 @@ import { MatIcon } from "@angular/material/icon";
 export interface SummaryOption {
   label: string;
   ruleId: string;
-  control: 'checkbox' | 'range' | 'weighting' | 'location' | 'concept' | 'relative-time-range' | 'tribal-affiliation' | 'prevalence';
+  control: 'checkbox' | 'range' | 'weighting' | 'location' | 'concept' | 'relative-time-range' | 'tribal-affiliation' | 'prevalence' | 'occupation';
   value: any;
 }
 
@@ -25,15 +29,25 @@ export interface SummaryOption {
   styleUrls: ['./defaults-summary.scss']
 })
 export class DefaultsSummaryComponent {
+  /** Title to display at the top of the summary section */
   title = input<string>('');
+
+  /** The form rule containing options to summarize */
   rule = input.required<FormRule>();
+
+  /** Current form values for the step being summarized */
   stepFormValue = input.required<any>();
+
+  /** Units for displaying weighting values (decimal or percent) */
   units = input<'decimal' | 'percent'>('percent');
+
+  /** Whether the summary is in review-only mode (no customize button) */
   reviewOnly = input<boolean>(false);
 
+  /** Emits when the user clicks the customize button */
   onCustomize = output<void>();
 
-  // Computed signal that processes options from form value
+  /** Computed signal that processes options from form value */
   options = computed(() => {
     const rule = this.rule();
     const stepFormValue = this.stepFormValue();
@@ -48,10 +62,12 @@ export class DefaultsSummaryComponent {
     });
   });
 
+  /** Handles the customize button click and emits the event */
   handleCustomizeClick() {
     this.onCustomize.emit();
   }
 
+  /** Converts a form option and its raw value into a standardized summary option */
   private toSummaryOption(rule: Option, rawValue: unknown): SummaryOption {
     const base = {
       label: rule.label,
@@ -85,6 +101,7 @@ export class DefaultsSummaryComponent {
     }
   }
 
+  /** Normalizes weighting values from various form formats into a consistent array of label-weight pairs */
   private normalizeWeightingValues(
     rule: Option,
     formValue: unknown

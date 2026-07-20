@@ -1,3 +1,8 @@
+/**
+ * Component for displaying a read-only view of a medication set with action buttons.
+ * Shows medication set details, weight distribution, and provides edit, delete, and copy functionality.
+ * Can be used in both edit mode (with action buttons) and review mode (read-only).
+ */
 import {Component, computed, inject, input, output} from '@angular/core';
 import {MedicationsReviewComponent} from '../medications-review/medications-review.component';
 import {MatIcon} from '@angular/material/icon';
@@ -29,34 +34,56 @@ import {MatDialog} from '@angular/material/dialog';
   styleUrl: './view-medication-set.scss',
 })
 export class ViewMedicationSet {
+  /** Event emitted when the edit button is clicked */
   onEdit = output<number>();
+
+  /** Event emitted when the delete button is clicked (after confirmation) */
   onDelete = output<number>();
+
+  /** Event emitted when the copy button is clicked */
   onCopy = output<number>();
+
+  /** The medication set data to display */
   data = input.required<any>();
+
+  /** The form array containing all medication sets */
   medicationSetsFormArray = input<FormArray>();
+
+  /** The index of this medication set in the array */
   index = input<number>();
-  editModeEnabled = input<boolean>(true); // Enables Editing. Used to switch from Review Cohort (no buntons to Edit, Delete, and Copy rendered) to Edit Medication Set
-  editDisabled = input<boolean>(false); // Disables the Edit button when the user is editing another medication sets. We can only edit the sets one at a time.
+
+  /** Enables edit mode with action buttons. Set to false for read-only review mode */
+  editModeEnabled = input<boolean>(true);
+
+  /** Disables the edit button when another medication set is being edited */
+  editDisabled = input<boolean>(false);
+
+  /** Dialog service for confirmation dialogs */
   private dialog: MatDialog = inject(MatDialog);
 
+  /** Service for medication form helpers and weight calculations */
   medicationHelperService = inject(MedicationHelperService);
 
-  // Derive medicationSetFg from the array and index
+  /** Computed form group for this specific medication set derived from array and index */
   medicationSetFg = computed(() =>
     this.medicationSetsFormArray()?.at(this.index()) as FormGroup
   );
 
+  /** UI constants for medication labels and messages */
   readonly UI_CONSTANTS = UI_CONSTANTS.COHORT_GENERATION.MEDICATIONS;
 
 
+  /** Emits the copy event with the medication set index */
   protected onCopyMedicationSet(index: number) {
     this.onCopy.emit(index);
   }
 
+  /** Emits the edit event with the medication set index */
   protected onEditMedicationSet(index: number) {
     this.onEdit.emit(index);
   }
 
+  /** Opens confirmation dialog and emits delete event if confirmed */
   protected onDeleteMedicationSet(index: number) {
     openConfirmationDialog(
       this.dialog,
@@ -79,6 +106,7 @@ export class ViewMedicationSet {
       );
   }
 
+  /** Toggles the lock state of the weight control, enabling/disabling weight editing */
   protected toggleLock() {
     const weightFg = this.medicationSetFg()?.get('weightFg');
     const lockControl = weightFg?.get('lock');
@@ -97,14 +125,17 @@ export class ViewMedicationSet {
     }
   }
 
+  /** Handles weight input focus, preparing for weight redistribution */
   protected onWeightFocus() {
     this.medicationHelperService.onFocus(this.medicationSetsFormArray(), this.index());
   }
 
+  /** Handles weight input blur, triggering weight redistribution among unlocked sets */
   protected onWeightBlur() {
     this.medicationHelperService.onBlur(this.medicationSetsFormArray(), this.index());
   }
 
+  /** Manually triggers weight recalculation and redistribution */
   protected calculateWeights() {
     this.medicationHelperService.onBlur(this.medicationSetsFormArray(), this.index());
   }

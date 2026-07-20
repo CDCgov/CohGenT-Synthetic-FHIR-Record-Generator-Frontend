@@ -158,6 +158,7 @@
                 }
               }
             }
+            <app-error-message [componentName]="'observations-component'"></app-error-message>
             @if (labObservationFg.get(['value', 'valueType'])!.value == 'string') {
               <button matButton="outlined" type="button"
                       (click)="addValue(labObservationFg, labObservationFg.get(['value', 'valueType'])!.value)">

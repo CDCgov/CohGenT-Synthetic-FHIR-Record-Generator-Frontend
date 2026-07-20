@@ -1,3 +1,8 @@
+/**
+ * Component for adding or editing a medication set with multiple medications.
+ * Provides form controls for medication selection, dosage, frequency, and weight distribution.
+ * Supports adding, deleting medications and automatic scrolling to newly added items.
+ */
 import {
   AfterViewChecked,
   Component,
@@ -28,23 +33,40 @@ import {Utils} from '../../../../services/utils.service';
   styleUrl: './add-edit-medication-set.component.scss',
 })
 export class AddEditMedicationSet implements AfterViewChecked {
+  /** Reference to the medications container element for scrolling */
   @ViewChild('medicationsContainer') medicationsContainer?: ElementRef;
 
+  /** The form group containing the medication set data */
   medicationSetFg = input.required<FormGroup>();
+
+  /** Temporary storage for form values during editing for cancel functionality */
   tempFormValueStorage = input<any>();
 
+  /** Event emitted when editing is cancelled */
   onCancel = output();
+
+  /** Event emitted when the medication set is saved */
   onSave = output();
 
+  /** Utility service for form operations */
   utils = inject(Utils)
 
+  /** Service for medication form helpers and operations */
   private medicationHelperService = inject(MedicationHelperService);
+
+  /**
+   * Flag indicating whether to scroll to bottom after the next view check.
+   * Set to true in addMedication() to automatically scroll the container
+   * and bring the newly added medication into view.
+   */
   private shouldScrollToBottom = false;
 
+  /** Getter that returns the medications form array from the medication set */
   get medicationFromArray(): FormArray {
     return this.medicationSetFg().get('medications') as FormArray;
   }
 
+  /** Lifecycle hook that scrolls to bottom if flag is set */
   ngAfterViewChecked(): void {
     if (this.shouldScrollToBottom && this.medicationsContainer) {
       this.scrollToBottom();
@@ -52,15 +74,18 @@ export class AddEditMedicationSet implements AfterViewChecked {
     }
   }
 
+  /** Adds a new medication to the medications form array and triggers scroll */
   addMedication(): void {
     this.medicationHelperService.addMedication(this.medicationFromArray);
     this.shouldScrollToBottom = true;
   }
 
+  /** Deletes a medication at the specified index and redistributes weights */
   onDeleteMedication(index: number): void {
     this.medicationHelperService.deleteMedication(index, this.medicationFromArray);
   }
 
+  /** Scrolls the medications container to the bottom */
   private scrollToBottom(): void {
     if (this.medicationsContainer) {
       const element = this.medicationsContainer.nativeElement;
@@ -68,12 +93,14 @@ export class AddEditMedicationSet implements AfterViewChecked {
     }
   }
 
+  /** Cancels editing, removes controls marked for deletion, and restores previous values */
   onCancelMedicationSetEdit() {
     this.removeControlsMarkedForDeletion(this.medicationFromArray);
     this.medicationSetFg().patchValue(this.tempFormValueStorage(), {emitEvent: false});
     this.onCancel.emit();
   }
 
+  /** Saves the medication set after validation, marking all medications as saved */
   onSaveMedicationSet() {
     this.utils.markFormGroupTouched(this.medicationSetFg());
     this.medicationSetFg().updateValueAndValidity();
@@ -86,6 +113,7 @@ export class AddEditMedicationSet implements AfterViewChecked {
     }
   }
 
+  /** Removes form controls that are marked for deletion (deleteOnCancel = true) */
   private removeControlsMarkedForDeletion(formArray: FormArray): void {
     if (!formArray || formArray.length === 0) {
       return;
@@ -100,4 +128,3 @@ export class AddEditMedicationSet implements AfterViewChecked {
     controlsToKeep.forEach(control => formArray.push(control));
   }
 }
-

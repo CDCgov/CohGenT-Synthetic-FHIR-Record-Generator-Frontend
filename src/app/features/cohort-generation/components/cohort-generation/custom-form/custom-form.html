@@ -58,6 +58,14 @@
         >
         </app-tribal-affiliation>
       </div>
+    } @else if (option.control == "occupation") {
+      <div class=line-item>
+        <app-occupation-form
+          [option]="option"
+          [form]="form().controls[`custom_${index()}`] | asFormGroup"
+          [originalForm]="originalFrom().controls[`custom_${index()}`] | asFormGroup">
+        </app-occupation-form>
+      </div>
     }
     <div class="margin-top-lg margin-bottom-md">
       <mat-divider/>

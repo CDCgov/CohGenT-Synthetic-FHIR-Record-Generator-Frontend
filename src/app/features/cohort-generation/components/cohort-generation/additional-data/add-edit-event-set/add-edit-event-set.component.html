@@ -23,14 +23,18 @@
             <mat-divider></mat-divider>
           </div>
           <div class="margin-top-sm" [formGroup]="additionalDataFg().get('diagnosticPanel') | asFormGroup">
-            <mat-checkbox formControlName="includeDiagnosticReport" labelPosition="before">
-              <div
-                class="label flex-row">{{ UI_CONSTANTS.EVENT_SET_SETTINGS.DIAGNOSTIC_REPORT_SETTINGS.CHECKBOX_LBL }}
-                <mat-icon class="tooltip-icon"
+            <span
+              [matTooltip]="additionalDataFg().get(['diagnosticPanel', 'includeDiagnosticReport']).disabled ?
+                  UI_CONSTANTS.EVENT_SET_SETTINGS.DIAGNOSTIC_REPORT_SETTINGS.CHECKBOX_DISABLED_LABEL: ''">
+              <mat-checkbox formControlName="includeDiagnosticReport">
+                <div
+                  class="label flex-row">{{ UI_CONSTANTS.EVENT_SET_SETTINGS.DIAGNOSTIC_REPORT_SETTINGS.CHECKBOX_LBL }}
+                  <mat-icon class="tooltip-icon"
                           [matTooltip]="UI_CONSTANTS.EVENT_SET_SETTINGS.DIAGNOSTIC_REPORT_SETTINGS.TOOLTIP">info
-                </mat-icon>
-              </div>
-            </mat-checkbox>
+                  </mat-icon>
+                </div>
+              </mat-checkbox>
+            </span>
             <div class="tag is-rounded form-tag optional is-white margin-left-sm">
               Optional
             </div>
@@ -50,21 +54,30 @@
 
     <section class="pt-4 mt-4 border-t">
       <div class="d-flex gap-2 margin-bottom-md">
-        <button matButton="filled" class="secondary-btn" (click)="addObservation(additionalDataFg())" type="button"
-                [matTooltip]="UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.LAB_RESULT">
-          <mat-icon>add</mat-icon>
-          Add {{ labObservationButtonLabel() }}
-        </button>
-        <button matButton="filled" class="secondary-btn" (click)="addProcedure(additionalDataFg())" type="button"
-                [matTooltip]="UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.PROCEDURE">
-          <mat-icon>add</mat-icon>
-          Add {{ procedureButtonLabel() }}
-        </button>
-        <button matButton="filled" class="secondary-btn" (click)="addRadiologyReport(additionalDataFg())" type="button"
-                [matTooltip]="UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.RADIOLOGY_REPORT">
-          <mat-icon>add</mat-icon>
-          Add {{ radiologyButtonLabel() }}
-        </button>
+        <span [matTooltip]="UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.LAB_RESULT">
+          <button matButton="filled" class="secondary-btn" (click)="addObservation(additionalDataFg())" type="button">
+            <mat-icon>add</mat-icon>
+            Add {{ labObservationButtonLabel() }}
+          </button>
+        </span>
+        <span [matTooltip]="additionalDataFg().get(['diagnosticPanel', 'includeDiagnosticReport'])?.value ?
+                UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.RADIOLOGY_REPORT_AND_PROCEDURE_DISABLED_MESSAGE : UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.PROCEDURE">
+          <button matButton="filled" class="secondary-btn" (click)="addProcedure(additionalDataFg())" type="button"
+                [disabled]="additionalDataFg().get(['diagnosticPanel', 'includeDiagnosticReport'])?.value"
+          >
+            <mat-icon>add</mat-icon>
+            Add {{ procedureButtonLabel() }}
+          </button>
+        </span>
+        <span [matTooltip]="additionalDataFg().get(['diagnosticPanel', 'includeDiagnosticReport'])?.value ?
+                UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.RADIOLOGY_REPORT_AND_PROCEDURE_DISABLED_MESSAGE : UI_CONSTANTS.CLINICAL_DATA_TOOLTIPS.RADIOLOGY_REPORT">
+          <button matButton="filled" class="secondary-btn" (click)="addRadiologyReport(additionalDataFg())" type="button"
+                [disabled]="additionalDataFg().get(['diagnosticPanel', 'includeDiagnosticReport'])?.value"
+          >
+            <mat-icon>add</mat-icon>
+            Add {{ radiologyButtonLabel() }}
+          </button>
+        </span>
       </div>
     </section>
 

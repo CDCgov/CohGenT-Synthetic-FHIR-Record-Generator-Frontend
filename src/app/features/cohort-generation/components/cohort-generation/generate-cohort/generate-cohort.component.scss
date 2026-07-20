@@ -11,3 +11,18 @@
     background-color: #F4F9FE;
   }
 }
+.loading-ellipsis::after {
+  display: inline-block;
+  animation: ellipsis 1.2s infinite steps(4, end);
+  content: "...";
+  width: 1.5em; /* Prevents text from shifting */
+  text-align: left;
+}
+
+@keyframes ellipsis {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
+  100% { content: ""; }
+}

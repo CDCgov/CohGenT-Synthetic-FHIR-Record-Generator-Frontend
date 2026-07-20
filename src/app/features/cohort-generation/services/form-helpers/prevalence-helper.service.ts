@@ -12,12 +12,17 @@ export type PrevalenceForm = {
   value: FormControl<number>;
 };
 
+/**
+ * Helper service for managing prevalence percentage forms with synchronized slider/input controls.
+ * Handles prevalence values as percentages (0-100) with bidirectional synchronization.
+ */
 @Injectable({
   providedIn: 'root',
 })
 export class PrevalenceHelperService {
   private fb = inject(FormBuilder).nonNullable as NonNullableFormBuilder;
 
+  /** Creates a prevalence FormGroup with synchronized slider and input controls (0-100%). */
   getPrevalenceFg(option: PrevalenceOption): FormGroup<PrevalenceForm> {
 
     const fg =  this.fb.group<PrevalenceForm>({
@@ -35,6 +40,7 @@ export class PrevalenceHelperService {
     return fg;
   }
 
+  /** Sets up bidirectional synchronization between slider and input, enforcing 0-100 range. */
   private setValueChangeSubscriptions(fg: FormGroup<PrevalenceForm>): void {
     const sliderCtrl = fg.controls.slider;
     const valueCtrl = fg.controls.value;

@@ -16,14 +16,13 @@
       <app-cohort-info></app-cohort-info>
     </div>
 
-    <div [matTooltip]="stepLockTracker.tooltipMessage()"
-         [matTooltipDisabled]="!stepLockTracker.isLocked()">
+    <div [matTooltip]="stepLockTracker.isLocked() ? stepLockTracker.tooltipMessage() : UI_CONSTANTS.MENU_SECTION.SAVE_COHORT_SETTINGS_TOOLTIP">
       <button matButton="outlined"
               [disabled]="stepLockTracker.isLocked()"
               (click)="onExportCohortConfiguration()"
               class="w-full">
         <mat-icon>download</mat-icon>
-        Save Cohort Settings
+        {{ UI_CONSTANTS.MENU_SECTION.SAVE_COHORT_SETTINGS }}
       </button>
     </div>
 
@@ -128,7 +127,7 @@
                 </app-additional-data>
               } @else if (rule.type == 'review') {
                 <app-review-cohort
-                  [formValue]="form.value"
+                  [formValue]="formValue()"
                   [formRules]="useCase?.formRules"
                 >
                 </app-review-cohort>
@@ -140,6 +139,7 @@
                   (formSubmit)="onSubmit()"
                   (onViewSummary)="onViewCohortSummary()"
                   (onDownloadCohort)="onDownloadCohort()"
+                  [isLoading]="isLoading()"
                 ></app-generate-cohort>
               }
               <!-- Start stepper navigation-->

@@ -1,65 +1,69 @@
-import {Injectable} from '@angular/core';
-import {HttpRequest, HttpClient} from '@angular/common/http';
-import {Subject, Observable, of} from 'rxjs';
-import {switchMap, catchError} from 'rxjs/operators';
+import {Injectable, signal} from '@angular/core';
+import {Observable, throwError} from 'rxjs';
+import {UI_CONSTANTS} from '../../constants/ui-constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SharedHttpErrorService {
-  private failedRequest: HttpRequest<any> | null = null;
-  private retrySubject = new Subject<void>();
-  private errorComponentVisible = new Subject<boolean>();
-  private errorMessageStr: Subject<string> = new Subject();
-  public errorMessageStr$: Observable<string> = this.errorMessageStr.asObservable();
+  // Signals for error state
+  private errorDetectedSignal = signal<boolean>(false);
+  private errorMessageSignal = signal<string>('');
+  private targetComponentSignal = signal<string | null>(null);
 
-  constructor(private http: HttpClient) {
-  }
+  // Expose read-only signals
+  readonly errorDetected = this.errorDetectedSignal.asReadonly();
+  readonly errorMessage = this.errorMessageSignal.asReadonly();
+  readonly targetComponent = this.targetComponentSignal.asReadonly();
 
-  storeFailedRequest(request: HttpRequest<any>) {
-    this.failedRequest = request;
-  }
-
-  setErrorMessage(message: string){
-    this.errorMessageStr.next(message);
-  }
-
-  showErrorComponent() {
-    this.errorComponentVisible.next(true);
-  }
-
-  hideErrorComponent() {
-    this.errorComponentVisible.next(false);
-  }
-
-  isErrorComponentVisible(): Observable<boolean> {
-    return this.errorComponentVisible.asObservable();
-  }
-
-  retryFailedRequest() {
-    if (this.failedRequest) {
-      this.retrySubject.next();  // Trigger the retry subject
+  /**
+   * Sets error message and target component
+   * @param message - Error message to display
+   * @param componentName - Optional component name where error should be displayed. If null, displays on main page.
+   */
+  setErrorMessage(message: string | null, componentName: string | null = null) {
+    if (message) {
+      this.errorDetectedSignal.set(true);
+      this.errorMessageSignal.set(message);
+      this.targetComponentSignal.set(componentName);
+    } else {
+      this.errorMessageSignal.set('');
+      this.errorDetectedSignal.set(false);
+      this.targetComponentSignal.set(null);
     }
   }
 
-  retryRequest(): Observable<any> {
-    this.errorMessageStr.next('');
-    return this.retrySubject.pipe(
-      switchMap(() => {
-        if (this.failedRequest) {
-          const retryRequest = this.failedRequest; // Store the failed request locally
-          this.failedRequest = null; // Reset the failed request for subsequent retries
-          return this.http.request(retryRequest).pipe(
-            catchError(error => {
-              // Handle error again if the retry fails, but don't complete the stream
-              this.storeFailedRequest(retryRequest);  // Re-store the request if retry fails
-              this.showErrorComponent();  // Show error component again
-              return of(null);  // Return null or empty observable on error
-            })
-          );
-        }
-        return of(null);  // Return null if no failed request
-      })
-    );
+  showErrorComponent() {
+    this.errorDetectedSignal.set(true);
+  }
+
+  hideErrorComponent() {
+    this.setErrorMessage(null);
+  }
+
+  /**
+   * Handle HTTP errors consistently across all services
+   * @param error - The error object from the HTTP request
+   * @param errMsg - Optional custom error message
+   * @param componentName - Optional component name where error should be displayed. If not provided, displays on main page.
+   * @returns Observable that throws the error
+   */
+  handleError(error: any, errMsg?: string, componentName?: string): Observable<never> {
+    let errorMsg = '';
+
+    if (error.status === 404) {
+      errorMsg = "404. Unable to reach the API";
+    } else if (error.message && error.detail) {
+      errorMsg = `${error.message} - ${error.detail}`;
+    } else if (error.message) {
+      errorMsg = error.message;
+    } else if (errMsg) {
+      errorMsg = errMsg;  // Fixed: was error.errMsg
+    } else {
+      errorMsg = UI_CONSTANTS.ERROR_MSG.DEFAULT_SERVER_ERROR_MSG;
+    }
+
+    this.setErrorMessage(errorMsg, componentName || null);
+    return throwError(() => error);
   }
 }

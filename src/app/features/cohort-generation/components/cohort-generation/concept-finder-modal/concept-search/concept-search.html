@@ -34,6 +34,18 @@
       </mat-select>
     </mat-form-field>
 
+    <!-- Omop Filter  Select -->
+    <mat-form-field appearance="outline" class="filter-dropdown">
+      <mat-label>Domain</mat-label>
+      <mat-select formControlName="domain">
+        @for (filterStr of omopDomainList; track filterStr) {
+          <mat-option [value]="filterStr">
+            {{ filterStr}}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
     <!-- Action Buttons -->
     <button
       matButton="outlined"
@@ -52,11 +64,14 @@
 
 <!-- Results Section -->
 <div class="results-container">
-  <!-- No Results Message -->
-  @if (!isLoading() && hasSearched() && dataSource.data.length === 0) {
+  <!-- Error Message (only for server errors) -->
+  <app-error-message componentName="concept-finder-modal"></app-error-message>
+
+  <!-- No Results Message (only when no error) -->
+  @if (!isLoading() && hasSearched() && dataSource.data.length === 0 && !sharedHttpErrorService.errorDetected()) {
     <div class="no-results">
       <p>No concepts found matching your search criteria.</p>
-      <p>Try a different search term or select a different system.</p>
+      <p>Try a different search term, select a different system or Domain.</p>
     </div>
   }
   <!-- Results Table -->
@@ -84,8 +99,15 @@
             </td>
           </ng-container>
 
-          <!-- Has Presets Column -->
+          <!-- Domain Column -->
+          <ng-container matColumnDef="domain">
+            <th mat-header-cell *matHeaderCellDef>Domain</th>
+            <td mat-cell *matCellDef="let concept">
+              <span class="system-badge">{{ concept.domain }}</span>
+            </td>
+          </ng-container>
 
+          <!-- Has Presets Column -->
             <ng-container matColumnDef="hasPresets">
               <th mat-header-cell *matHeaderCellDef>Has Presets</th>
               <td mat-cell *matCellDef="let concept">

@@ -1,0 +1,50 @@
+variables:
+  PROJECT_NAME: cohort-generation-ui # REQUIRED - Replace with project name.
+  CLONE_PATH: .
+  CONTEXT: $CLONE_PATH # Optional - Change only if you need the Docker build context to be different than the clone path.
+  DOCKERFILE: ./Dockerfile # Optional - Change to path to the appropriate Dockerfile for this pipeline.
+  IMAGE_NAME: $PROJECT_NAME # Optional - Change only if you want to use an image name that is not the project name.
+  # IMAGE_TAG: dev # REQUIRED - Replace with your *default* image tag. e.g. latest or dev.
+  IMAGE: "${ARTIFACTORY_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}" # Optional - Fully qualified image name/tag. Not recommended to change.
+  CONTAINER_NAME: $PROJECT_NAME # Optional - Change only if you need your running container on the target server to use a different name than the image name.
+  HOST_PORT: 8250 # REQUIRED - Set to the external host machine port according to the ICL IT WAF Document.
+  CONTAINER_PORT: 80 # Optional - The internal container port. For NGINX this is typically 80.
+  PORTS: "${HOST_PORT}:${CONTAINER_PORT}" # DO NOT CHANGE
+  NETWORK: cohort-generation-network # OPTIONAL - Set to Docker bridge network your container should use.
+  # TARGET: "dev" # Optional - Set to your *default* target environment. "dev" (indigobuzzard02) or "prod" (indigobuzzard04) only.
+
+  # Set branches on which to trigger deployment to prod (IB6) or dev (IB4)
+  PROD_BRANCH: deploy-to-main # REQUIRED
+  DEV_BRANCH: deploy-to-dev # REQUIRED
+  ANGULAR: true
+
+workflow:
+  rules:
+    - if: '$FORCE_DEPLOY == "true"' # Override to deploy a feature branch to dev via pipeline vars.
+    - if: '$CI_COMMIT_BRANCH == $PROD_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $DEV_BRANCH'
+    - when: never
+
+stages:
+  - debug
+  - build
+  - deploy
+
+include:
+  - project: 'ICL-HEATD/pipeline-templates'
+    ref: main
+    file: 'jobs/log_pipeline_var.yml'
+  - project: 'ICL-HEATD/pipeline-templates'
+    ref: main
+    file: 'jobsv2/build_with_buildah_v2.yml'
+  - project: 'ICL-HEATD/pipeline-templates'
+    ref: main
+    file: 'jobsv2/deploy_to_ib_v2.yml'
+
+build:
+  extends: .build_with_buildah
+
+deploy:
+  extends: .deploy_to_ib
+  needs:
+    - build

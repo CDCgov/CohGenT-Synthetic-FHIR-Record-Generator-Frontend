@@ -1,6 +1,10 @@
 import {inject, Injectable} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 
+/**
+ * Helper service for managing cohort generation configuration forms.
+ * Handles seed, patient count, bundle type, and output format settings.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -16,6 +20,7 @@ export class GenerateCohortHelperService {
     {display: "Bulk FHIR NDJSON", value: "ndjson"}
   ]
 
+  /** Creates the cohort generation configuration FormGroup with seed and patient count. */
   buildFg(value?: any): FormGroup {
     const numberOfPatientsFg = this.buildNumberOfPatientsFg()
     const fg = new FormGroup({
@@ -30,16 +35,14 @@ export class GenerateCohortHelperService {
     return fg;
   }
 
+  /** Generates a random 10-digit seed number for reproducible cohort generation. */
   generateRandom10DigitNumber(): number {
-    // Generate a random number between 1000000000 (inclusive) and 9999999999 (inclusive)
-    const min = 1000000000; // Smallest 10-digit number
-    const max = 9999999999; // Largest 10-digit number
-
-    // Math.random() returns a float between 0 (inclusive) and 1 (exclusive)
-    // Scale it to the desired range and then round down to get an integer
+    const min = 1000000000;
+    const max = 9999999999;
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+  /** Creates synchronized slider and input controls for patient count (1-50). */
   private buildNumberOfPatientsFg() {
     let fg = this.fb.group({
       'slider': new FormControl(1),

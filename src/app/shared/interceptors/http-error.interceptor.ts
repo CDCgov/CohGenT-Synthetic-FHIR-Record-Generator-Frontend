@@ -17,8 +17,6 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
   next: HttpHandlerFn
 ): Observable<HttpEvent<any>> => {
   const sharedService = inject(SharedHttpErrorService);
-
-  // Logic for hiding error component
   sharedService.hideErrorComponent();
 
   // Check if this request should bypass the interceptor
@@ -30,7 +28,6 @@ export const httpErrorInterceptor: HttpInterceptorFn = (
   // Handle the request and catch errors
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      sharedService.storeFailedRequest(req); // Store the failed request
       sharedService.showErrorComponent(); // Show the error UI
       return throwError(() => error); // Propagate the error
     })

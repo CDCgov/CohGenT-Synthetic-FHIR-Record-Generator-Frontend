@@ -1,11 +1,11 @@
 import {inject, Injectable} from '@angular/core';
 import {Concept} from '../models/cohort-generation-request-body';
-import {catchError, map, Observable, shareReplay, throwError} from 'rxjs';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {catchError, map, Observable} from 'rxjs';
+import {HttpClient} from '@angular/common/http';
 import {EnvironmentHandlerService} from '../../../config/environment-handler.service';
 import {SYSTEM_LIST} from '../../../constants/app-constants';
-import {SharedHttpErrorService} from '../../../shared/services/shared-http-error.service';
 import {PresetCondition} from '../models/preset-condition';
+import {SharedHttpErrorService} from '../../../shared/services/shared-http-error.service';
 
 export interface PaginatedResponse {
   total: number;
@@ -19,7 +19,6 @@ export class ConceptSearchService {
   private http = inject(HttpClient);
   private environmentHandler = inject(EnvironmentHandlerService);
   private sharedHttpErrorService = inject(SharedHttpErrorService);
-  private presetConditions$: Observable<PresetCondition[]> | null = null;
   readonly SYSTEM_LIST = SYSTEM_LIST;
 
   private getCodes(codes: {display: string, code: string, system: string}[]): Concept[]{
@@ -37,30 +36,23 @@ export class ConceptSearchService {
   }
 
   getPresetConditions(): Observable<PresetCondition[]> {
-    if (!this.presetConditions$) {
-      this.presetConditions$ = this.http
-        .get<any>(`${this.environmentHandler.getBaseApiURL()}presets/condition`)
-        .pipe(
-          map(response => {
-            const result : PresetCondition[] = response.conditionList.map((el: any) => {
-                return{
-                  name: el.name,
-                  primaryCodes: this.getCodes(el.primaryCodes),
-                  secondaryCodes: this.getCodes(el.secondaryCodes),
-                }
+    // Removed caching for testing - create fresh observable each time
+    return this.http
+      .get<any>(`${this.environmentHandler.getBaseApiURL()}presets/condition`)
+      .pipe(
+        map(response => {
+          const result : PresetCondition[] = response.conditionList.map((el: any) => {
+              return{
+                name: el.name,
+                primaryCodes: this.getCodes(el.primaryCodes),
+                secondaryCodes: this.getCodes(el.secondaryCodes),
               }
-            );
-            return result;
-          }),
-          catchError(error => {
-            console.error('Error fetching preset conditions:', error);
-            throw error; // Re-throw to propagate error to subscribers
-          }),
-          shareReplay(1) // Cache the result and share among all subscribers
-        );
-    }
-
-    return this.presetConditions$;
+            }
+          );
+          return result;
+        }),
+        catchError(error => this.sharedHttpErrorService.handleError(error, undefined, 'concept-finder-modal'))
+      );
   }
 
   /**
@@ -73,15 +65,16 @@ export class ConceptSearchService {
   searchConcepts(
     searchTerm: string,
     systemUri: string | null,
+    domain: string | null,
     page: number,
     pageSize: number
   ): Observable<PaginatedResponse> {
-    const body = this.buildSearchBody(searchTerm, systemUri, page, pageSize);
+    const body = this.buildSearchBody(searchTerm, systemUri, domain, page, pageSize);
     const url = `${this.environmentHandler.getBaseApiURL()}terminology/search`;
 
     return this.http.post<any>(url, body).pipe(
       map(response => this.mapToPaginatedResponse(response)),
-      catchError(error => this.handleSearchError(error))
+      catchError(error => this.sharedHttpErrorService.handleError(error, undefined, 'concept-finder-modal'))
     );
   }
 
@@ -91,17 +84,21 @@ export class ConceptSearchService {
   private buildSearchBody(
     searchTerm: string,
     systemUri: string | null,
+    domain: string | null,
     page: number,
     pageSize: number
   ): any {
     const body: any = {
-      term: searchTerm,
+      term: searchTerm.trim(),
       page: page + 1,  // API expects 1-based page index
       count: pageSize
     };
 
     if (systemUri) {
       body.system = systemUri;
+    }
+    if (domain && domain.toLowerCase() !== 'all') {
+      body.domain = domain.trim().toLowerCase();
     }
 
     return body;
@@ -130,14 +127,8 @@ export class ConceptSearchService {
       systemUri: item.system || '',
       code: item.code || '',
       hasPresets: item.hasPresets,
+      domain: item.domain || ''
     };
   }
 
-  /**
-   * Handle search errors
-   */
-  private handleSearchError(error: any): Observable<never> {
-    this.sharedHttpErrorService.setErrorMessage("Error loading observation value presets.");
-    return throwError(() => error);
-  }
 }

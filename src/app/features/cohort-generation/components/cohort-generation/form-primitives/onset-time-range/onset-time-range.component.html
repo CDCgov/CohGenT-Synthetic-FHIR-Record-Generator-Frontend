@@ -1,0 +1,88 @@
+<form [formGroup]="form()">
+  <div class="muti-input-controls row-layout">
+    <div class="form-group">
+      <div class="field-label">Start:</div>
+      <div class="input-group">
+        <div class="segmented-wrapper">
+          <ng-container formGroupName='onsetPlusFg'>
+            <div class="field-addon standard-width">Onset</div>
+            <div class="field-addon standard-width ">Plus (+)</div>
+
+            <mat-form-field class="narrow-input">
+              <input type="number" matInput formControlName="value" [min]="0" placeholder="0">
+            </mat-form-field>
+
+            <mat-form-field class="unit-select">
+              <mat-select formControlName="unit">
+                @for (unit of TIME_PERIOD_UNIT_LIST; track unit) {
+                  <mat-option [value]="unit.value">{{ unit.display }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+
+      <div class="field-label"></div>
+      <div class="input-group">
+        <div class="segmented-wrapper">
+          <ng-container formGroupName='repeatFg'>
+            <div class="field-addon standard-width">
+              Repeat
+              <mat-checkbox formControlName="repeat"></mat-checkbox>
+            </div>
+
+            <ng-container formGroupName='every'>
+              <div class="field-addon standard-width">Every</div>
+
+              <mat-form-field class="narrow-input">
+                <input type="number" matInput formControlName="value" placeholder="0" [min]="0">
+              </mat-form-field>
+
+              <mat-form-field class="unit-select">
+                <mat-select formControlName="unit">
+                  @for (unit of TIME_PERIOD_UNIT_LIST; track unit) {
+                    <mat-option [value]="unit.value">{{ unit.display }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="form-group">
+      <div class="field-label">Until:</div>
+      <div class="input-group">
+        <ng-container formGroupName='untilFg'>
+
+          <mat-radio-group formControlName="endFor" class="radio-group-inline">
+            <mat-radio-button value="End" class="standard-width">End</mat-radio-button>
+            <mat-radio-button value="For" class="standard-width">For</mat-radio-button>
+          </mat-radio-group>
+
+          <div class="segmented-wrapper">
+            <mat-form-field class="narrow-input">
+              <input type="number" matInput formControlName="value" [min]="0" placeholder="0">
+            </mat-form-field>
+
+            <mat-form-field class="unit-select">
+              <mat-select formControlName="unit">
+                @for (unit of TIME_PERIOD_UNIT_LIST; track unit) {
+                  <mat-option [value]="unit.value">{{ unit.display }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+        </ng-container>
+      </div>
+
+    </div>
+  </div>
+</form>

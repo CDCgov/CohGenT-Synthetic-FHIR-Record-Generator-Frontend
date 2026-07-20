@@ -1,0 +1,57 @@
+<div class="column-headers d-flex gap-3">
+  <div class="value-header">Value</div>
+  <div class="weight-header">Weight</div>
+</div>
+@for (fg of formArray().controls; track fg; let i = $index) {
+  <form [formGroup]="fg">
+    <div class="d-flex gap-3">
+      <mat-form-field appearance="outline">
+        <input type="text" matInput formControlName="value">
+        @if (fg.get('value')!.hasError('required')) {
+          <mat-error>Value is Required</mat-error>
+        }
+      </mat-form-field>
+      <div class="d-flex gap-1">
+        <mat-form-field appearance="outline" class="input-max-width">
+          <input type="text" matInput formControlName="weight"
+                 (focus)="onFocus(i)"
+                 (blur)="onBlur(i)"
+                 (keyup.enter)="calculateWeights(i)">
+          @if (units() == 'percent') {
+            <mat-icon matSuffix>percent</mat-icon>
+          }
+          @if (fg.get('weight')!.hasError('required')) {
+            <mat-error>Value is Required</mat-error>
+          }
+          @if (fg.get('weight')!.hasError('min')) {
+            <mat-error>Value must be greater than or equal to 0</mat-error>
+          }
+          @if (fg.get('weight')!.hasError('max')) {
+            <mat-error>Value must be smaller than or equal to {{ units() == 'percent' ? 100 : 1 }}</mat-error>
+          }
+        </mat-form-field>
+        <mat-checkbox class="hidden" formControlName="lock"></mat-checkbox>
+        @if (formArray()?.controls?.length > 2) {
+          @if (fg.get(['lock'])!.value) {
+            <mat-icon class="lock-icon" (click)="onToggleCheckbox(fg);"
+                      matTooltip="Unlock input for editing">
+              lock
+            </mat-icon>
+          } @else {
+            <mat-icon class="lock-icon" (click)="onToggleCheckbox(fg);"
+                      matTooltip="Lock input for editing">
+              lock_open
+            </mat-icon>
+          }
+        }
+      </div>
+      @if(formArray().controls?.length > 1){
+        <mat-icon
+          (click)="onDelete(i);"
+          matTooltip="Delete line item">
+          delete
+        </mat-icon>
+      }
+    </div>
+  </form>
+}

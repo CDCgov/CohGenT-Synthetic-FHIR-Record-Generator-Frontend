@@ -1,38 +1,56 @@
-import {Component, OnInit} from '@angular/core';
-import {Observable} from 'rxjs';
+import {ChangeDetectorRef, Component, computed, effect, inject, input, Signal} from '@angular/core';
 import {SharedHttpErrorService} from '../../services/shared-http-error.service';
-import {AsyncPipe} from '@angular/common';
+import {MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
 
 @Component({
   selector: 'app-error-message',
   imports: [
-    AsyncPipe,
+    MatIconButton,
+    MatIcon,
   ],
   templateUrl: './error-message.component.html',
   styleUrl: './error-message.component.scss'
 })
-export class ErrorMessageComponent implements OnInit {
-  isVisible$: Observable<boolean>;
-  readonly defaultErrorMessage = 'The server encountered an error. Please try reloading the data.';
-  errorMessage: string = '';
-  constructor(private sharedHttpErrorService: SharedHttpErrorService) {}
+export class ErrorMessageComponent {
+  protected sharedHttpErrorService = inject(SharedHttpErrorService);
+  private cdr = inject(ChangeDetectorRef);
+  readonly defaultErrorMessage = 'The server encountered an error.';
 
-  ngOnInit(): void {
-    this.isVisible$ = this.sharedHttpErrorService.isErrorComponentVisible();
-    this.sharedHttpErrorService.errorMessageStr$.subscribe( value => this.errorMessage = value || this.defaultErrorMessage);
+  /**
+   * Optional component name input to identify where this error component is rendered.
+   * - If provided: Shows errors only when targetComponent matches this componentName
+   * - If not provided (null): Shows errors only when targetComponent is null (main page)
+   */
+  componentName = input<string | null>(null);
 
-    this.sharedHttpErrorService.retryRequest().subscribe(response => {
-      if (response) {
-        console.log('Request retried successfully:', response);
-        this.sharedHttpErrorService.hideErrorComponent(); // Hide the error component after retry succeeds
-      } else {
-        console.log('Retry failed.');
-      }
+  // Use a simple boolean property for visibility
+  protected isVisible = false;
+
+  constructor() {
+    // Update visibility whenever error state changes
+    effect(() => {
+      const error = this.sharedHttpErrorService.errorDetected();
+      const targetComponent = this.sharedHttpErrorService.targetComponent();
+      const componentName = this.componentName();
+
+      // Show error if:
+      // 1. An error exists, AND
+      // 2. The target component matches this component's name
+      //    - If this component has no name (null), show when target is null (main page)
+      //    - If this component has a name, show when target matches that name
+      this.isVisible = error && targetComponent === componentName;
+
+      // Force change detection to update the template immediately
+      this.cdr.detectChanges();
     });
   }
 
-  retry() {
-    this.sharedHttpErrorService.retryFailedRequest();
+  protected readonly errorMessage: Signal<string> = computed(() =>
+    this.sharedHttpErrorService.errorMessage() || this.defaultErrorMessage
+  );
+
+  close() {
+    this.sharedHttpErrorService.hideErrorComponent();
   }
 }
-

@@ -40,8 +40,8 @@
     } @else {
       <span class="formatted-value">No value recorded</span>
     }
-  } @else if (option().control === 'weighting' || option().control === 'tribal-affiliation') {
-<!--    EXPLICITLY Empty because weighting and tribal-affiliation are handled separately in the following block with charts-->
+  } @else if (option().control === 'weighting' || option().control === 'tribal-affiliation' || option().control === 'occupation') {
+<!--    EXPLICITLY Empty because weighting, tribal-affiliation, and occupation are handled separately in the following block with charts-->
   } @else {
     <span class="formatted-value">{{ option() | summaryValueFormat }}</span>
   }
@@ -96,6 +96,24 @@
           }
         </span>
       </div>
+    </div>
+  </div>
+}
+
+@if (option().control === 'occupation') {
+  <div class="custom-legend" [class.compact]="compact()">
+    <div class="legend-pill" [class.compact]="compact()">
+
+      <span class="name">
+        <div class="margin-top-md">
+        @if(option()?.value?.isRandomlyAssigned){
+         Patient Occupation is Randomly Assigned
+        }
+        @else {
+          {{ option()?.value?.occupationConcept?.display }}
+        }
+          </div>
+        </span>
     </div>
   </div>
 }

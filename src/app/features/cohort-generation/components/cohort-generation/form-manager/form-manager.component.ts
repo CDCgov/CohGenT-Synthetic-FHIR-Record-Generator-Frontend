@@ -1,3 +1,7 @@
+/**
+ * Component for managing multi-step cohort generation forms with stepper navigation.
+ * Coordinates form state, validation, navigation, and cohort generation workflow.
+ */
 import {
   AfterViewInit,
   Component,
@@ -37,6 +41,7 @@ import {UI_CONSTANTS} from '../../../../../constants/ui-constants';
 import {StepperLockTracker} from '../../../services/form-helpers/stepper-lock-tracker';
 import {MedicationHelperService} from '../../../services/form-helpers/medication-helper.service';
 import {StepperSelectionEvent} from '@angular/cdk/stepper';
+import {SharedHttpErrorService} from '../../../../../shared/services/shared-http-error.service';
 
 @Component({
   selector: 'app-form-manager',
@@ -66,26 +71,61 @@ import {StepperSelectionEvent} from '@angular/cdk/stepper';
 })
 export class FormManagerComponent implements AfterViewInit, OnDestroy {
 
+  /** The selected use case defining the form structure */
   useCase!: UseCase;
+
+  /** The main reactive form containing all step forms */
   form: FormGroup = new FormGroup({});
+
+  /** Copy of the original form for comparison/reset purposes */
   originalForm: FormGroup = new FormGroup({});
+
+  /** UI constants for display text and configuration */
   protected readonly UI_CONSTANTS = UI_CONSTANTS;
 
+  /** Service for cohort generation and data management */
   protected cohortService: CohortService = inject(CohortService);
+
+  /** Service for managing HTTP error display */
+  private sharedHttpErrorService= inject(SharedHttpErrorService);
+
+  /** Service for weighting form helpers and validation */
   protected weightingHelperService: WeightingHelperService = inject(WeightingHelperService);
+
+  /** Service for form building and management */
   private formManagerService: FormManagerService = inject(FormManagerService);
+
+  /** Material dialog service for opening modals */
   private dialog: MatDialog = inject(MatDialog);
+
+  /** Utility service for common operations */
   private utils = inject(Utils);
+
+  /** Service for tracking which stepper steps are locked */
   protected stepLockTracker = inject(StepperLockTracker);
+
+  /** Service for medication-specific form helpers */
   private medicationServiceHelper = inject(MedicationHelperService);
 
+  /** Signal indicating if cohort was successfully generated */
   cohortGeneratedSuccessfully = signal(false);
+
+  /** Signal indicating if cohort generation is in progress */
+  isLoading = signal(false);
+
+  /** Signal containing the generated cohort response data */
   generatedCohortResponse: WritableSignal<any> = signal(null);
+
+  /** Signal indicating if user is customizing default values */
   isCustomizingDefaults = signal(false);
+
+  /** Signal containing current form values */
   formValue = signal<any>({});
 
+  /** Reference to the Material stepper component */
   @ViewChild('stepper') stepper!: MatStepper;
 
+  /** Constructor that sets up reactive effects for form initialization */
   constructor() {
     effect(() => {
       this.useCase = this.cohortService.cohortData()!.selectedUseCase;
@@ -94,10 +134,12 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  /** Cleanup method that unlocks stepper when component is destroyed */
   ngOnDestroy(): void {
     this.stepLockTracker.setStepperLock(false);
   }
 
+  /** Initializes view after rendering, sets up form subscriptions and handles imported cohorts */
   ngAfterViewInit(): void {
     if (this.cohortService.cohortData()?.isImported && this.stepper) {
       const reviewCohortIndex =
@@ -107,11 +149,13 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
     }
     this.form.valueChanges.subscribe(() => {
       this.cohortGeneratedSuccessfully.set(false);
+      this.formValue.set(this.form.getRawValue());
     });
     // Set initial value
     this.formValue.set(this.form.getRawValue());
   }
 
+  /** Downloads the generated cohort as a ZIP file */
   onDownloadCohort() {
     let base64Content = this.generatedCohortResponse().data;
     const binaryContent = atob(base64Content);
@@ -132,17 +176,16 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
     URL.revokeObjectURL(link.href);
   }
 
+  /** Opens a modal to view the cohort generation summary */
   onViewCohortSummary() {
-    openConfirmationSummaryModal(this.dialog, this.generatedCohortResponse()).subscribe();
+    openConfirmationSummaryModal(this.dialog, this.generatedCohortResponse(), this.sharedHttpErrorService).subscribe();
   }
 
+  /** Submits the form and generates the cohort */
   onSubmit() {
     this.cohortGeneratedSuccessfully.set(false);
     this.form.markAllAsTouched();
-    console.log(this.form.value)
     if (this.form.invalid) {
-      console.error("Invalid form")
-      console.log(this.form);
       return;
     }
 
@@ -154,14 +197,16 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
         this.weightingHelperService.units(),
         this.utils
       );
-
+    this.isLoading.set(true);
     this.cohortService.generateCohort(cohortGenerationRequestBody).subscribe({
       next: response => {
         this.cohortGeneratedSuccessfully.set(true);
         this.generatedCohortResponse.set(response);
+        this.isLoading.set(false);
       },
       error: err => {
         this.cohortGeneratedSuccessfully.set(false);
+        this.isLoading.set(false);
       }
     });
   }
@@ -189,6 +234,7 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /** Validates current step and navigates to the next step if valid */
   onNext(index: number) {
     this.form.get(`step_${index}`).markAllAsTouched();
     this.form.get(`step_${index}`).updateValueAndValidity();
@@ -199,10 +245,12 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
 
   }
 
+  /** Navigates to a specific step in the stepper */
   onFormRuleSelected(selectedStepIndex: number) {
     this.stepper.selectedIndex = selectedStepIndex;
   }
 
+  /** Exports the current cohort configuration as a JSON file */
   onExportCohortConfiguration() {
     // remove isImported key here, it is not relevant when we export data
     const { isImported, ...selectedUseCaseWithoutImported } = this.cohortService.cohortData()!.selectedUseCase as any;
@@ -224,6 +272,7 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
     URL.revokeObjectURL(link.href);
   }
 
+  /** Toggles between customizing defaults and viewing summary */
   toggleCustomizing() {
     this.isCustomizingDefaults.set(!this.isCustomizingDefaults());
     this.formValue.set(this.form.getRawValue());
@@ -236,6 +285,7 @@ export class FormManagerComponent implements AfterViewInit, OnDestroy {
     return this.utils.areAllControlsTouched(formGroup);
   }
 
+  /** Navigates to the previous step in the stepper */
   onBack() {
     this.stepper.previous();
     this.formManagerService.setCurrentStep(this.stepper.selectedIndex);

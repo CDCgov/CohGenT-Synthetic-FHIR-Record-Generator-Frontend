@@ -1,3 +1,7 @@
+/**
+ * Modal component for displaying cohort generation summary in a table format.
+ * Shows patient information and FHIR resource counts with CSV export functionality.
+ */
 import {Component, computed, inject, Inject, OnInit, signal} from '@angular/core';
 import {
   MAT_DIALOG_DATA,
@@ -20,6 +24,8 @@ import {
 import {CohortService} from '../../../services/cohort.service';
 import {MatIcon} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
+import {ErrorMessageComponent} from '../../../../../shared/components/error-message/error-message.component';
+import {SharedHttpErrorService} from '../../../../../shared/services/shared-http-error.service';
 
 @Component({
   selector: 'app-generation-summary-modal',
@@ -40,28 +46,36 @@ import {MatTooltip} from '@angular/material/tooltip';
     MatRowDef,
     MatDialogActions,
     MatIcon,
-    MatTooltip
+    MatTooltip,
+    ErrorMessageComponent
   ],
   templateUrl: './generation-summary-modal.html',
   styleUrl: './generation-summary-modal.scss'
 })
 export class GenerationSummaryModal implements OnInit {
+  /** Reference to the dialog for closing and returning data */
   dialogRef: MatDialogRef<any> = inject(MatDialogRef);
+
+  /** Service for cohort-related operations including CSV conversion */
   cohortService = inject(CohortService);
+
+  /** Signal containing the modal data including generation summary */
   data = signal<any | null>(null);
 
+  /** Starting columns that appear first in the table */
   private readonly startingColumns: string[] = ['Name', 'Date of Birth', 'Sex']
 
+  /** Computed signal that combines starting columns with FHIR resource count columns */
   tableColumns = computed(() => {
       const fhirColumnKeys = Object.keys(this.data()?.generationSummary?.[0]?.summary?.resourceCounts);
       return [...this.startingColumns, ...fhirColumnKeys];
     }
   );
 
+  /** Computed signal that creates a MatTableDataSource from the generation summary data */
   readonly dataSource = computed(() => {
     const dataSource = new MatTableDataSource(
       this.data().generationSummary.map((result: any) => {
-        console.log(result);
         let mapped: any = {
           Name: result.summary.name,
           ['Date of Birth']: result.summary.birthDate,
@@ -77,17 +91,21 @@ export class GenerationSummaryModal implements OnInit {
     return dataSource;
   });
 
+  /** Constructor that receives dialog data via dependency injection */
   constructor(@Inject(MAT_DIALOG_DATA) private dialogData: any) {
   }
 
+  /** Closes the modal dialog */
   onClose() {
     this.dialogRef.close("None");
   }
 
+  /** Initializes the component by setting the data signal from dialog data */
   ngOnInit(): void {
     this.data.set(this.dialogData);
   }
 
+  /** Converts the generation summary to CSV format and triggers a download */
   onSaveAsCsv() {
     this.cohortService.convertSummaryToCsv(this.data()?.generationSummary).subscribe({
       next: (csvData: string) => {
@@ -118,7 +136,15 @@ export class GenerationSummaryModal implements OnInit {
   }
 }
 
-export function openConfirmationSummaryModal(dialog: MatDialog, dialogData: any) {
+/**
+ * Opens the generation summary modal dialog with the provided data.
+ * Configures dialog size and handles error state cleanup on close.
+ * @param dialog - MatDialog service for opening the modal
+ * @param dialogData - Data to display in the modal
+ * @param sharedHttpErrorService - Service for managing HTTP error display
+ * @returns Observable that emits when the dialog is closed
+ */
+export function openConfirmationSummaryModal(dialog: MatDialog, dialogData: any, sharedHttpErrorService: SharedHttpErrorService) {
 
   const config = new MatDialogConfig();
 
@@ -133,6 +159,10 @@ export function openConfirmationSummaryModal(dialog: MatDialog, dialogData: any)
   }
 
   const dialogRef = dialog.open(GenerationSummaryModal, config);
+  // Clean up error state when dialog closes
+  dialogRef.afterClosed().subscribe(() => {
+    sharedHttpErrorService.hideErrorComponent();
+  });
 
   return dialogRef.afterClosed();
 }

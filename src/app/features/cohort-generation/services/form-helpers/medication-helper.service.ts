@@ -4,6 +4,10 @@ import {ConceptHelperService} from './concept-helper.service';
 import {SYSTEM_LIST} from '../../../../constants/app-constants';
 import {WeightingHelperService} from './weighting-helper.service';
 
+/**
+ * Helper service for managing medication sets with weighted distributions.
+ * Handles medication CRUD operations, weight calculations, and validation.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -15,6 +19,7 @@ export class MedicationHelperService {
   private focusedWeightValue: number | null = null;
   readonly DEFAULT_SYSTEM = SYSTEM_LIST.find(system => system.label === "RxNorm");
 
+  /** Adds a new medication to the medications array. */
   addMedication(fgArray: FormArray) {
     fgArray.push(this.fb.group({
         dosage: new FormControl(''),
@@ -24,6 +29,7 @@ export class MedicationHelperService {
     ));
   }
 
+  /** Removes a medication at the specified index. */
   deleteMedication(i: number, medicationFromArray: FormArray) {
     medicationFromArray.removeAt(i);
   }
@@ -39,6 +45,7 @@ export class MedicationHelperService {
     })
   }
 
+  /** Imports medication sets from saved/exported data with weights. */
   importMedicationSets(medicationSetsFormArray: FormArray, importData: any[]): void {
     // Clear existing medication sets
     medicationSetsFormArray.clear();
@@ -77,6 +84,7 @@ export class MedicationHelperService {
     this.updateWeightControlStates(medicationSetsFormArray);
   }
 
+  /** Adds a new medication set with initial weight distribution. */
   addMedicationSet(medicationSetsFormArray: FormArray) {
     const nextNameCounter = this.getNextNameCounter(medicationSetsFormArray);
     const medicationSetFg = this.buildMedicationSetFg(nextNameCounter);
@@ -91,11 +99,7 @@ export class MedicationHelperService {
     this.updateWeightControlStates(medicationSetsFormArray);
   }
 
-  /**
-   * Copy a medication set and add it to the end of the array.
-   * @param medicationSetsFormArray - The FormArray containing all medication sets
-   * @param sourceIndex - The index of the medication set to copy
-   */
+  /** Copies an existing medication set and adds it to the end of the array. */
   copyMedicationSet(medicationSetsFormArray: FormArray, sourceIndex: number): void {
     // Validate index
     if (sourceIndex < 0 || sourceIndex >= medicationSetsFormArray.length) {
@@ -176,12 +180,7 @@ export class MedicationHelperService {
     });
   }
 
-  /**
-   * Custom validator for medication sets FormArray.
-   * Validates that the sum of all weight values is approximately 100.
-   * @param tolerance - Acceptable deviation from 100 (default: 0.01 to handle floating-point precision)
-   * @returns ValidatorFn that returns null if valid, or an error object if invalid
-   */
+  /** Validates that medication set weights sum to 100 (within tolerance). */
   static weightSumValidator(tolerance: number = 0.1): ValidatorFn {
     return (formArray: AbstractControl): ValidationErrors | null => {
       if (!(formArray instanceof FormArray)) {
@@ -214,11 +213,7 @@ export class MedicationHelperService {
     };
   }
 
-  /**
-   * Manually validate medication sets weights and set errors on the FormArray.
-   * This should be called when navigating between steps.
-   * @param medicationSetsFormArray - The FormArray containing all medication sets
-   */
+  /** Manually validates weight sum and sets errors on the FormArray. */
   validateWeightSum(medicationSetsFormArray: FormArray): void {
     const validator = MedicationHelperService.weightSumValidator();
     const errors = validator(medicationSetsFormArray);
@@ -236,12 +231,7 @@ export class MedicationHelperService {
     }
   }
 
-  /**
-   * Get the next available nameCounter by finding the maximum existing value
-   * and incrementing it by 1.
-   * @param medicationSetsFormArray - The FormArray containing all medication sets
-   * @returns The next nameCounter value to use
-   */
+  /** Gets the next available nameCounter for new medication sets. */
   private getNextNameCounter(medicationSetsFormArray: FormArray): number {
     if (medicationSetsFormArray.length === 0) {
       return 1;
@@ -269,19 +259,13 @@ export class MedicationHelperService {
     return fg;
   }
 
-  /**
-   * Called when a weight input receives focus.
-   * Stores the current value to use as the "previous" value for weight redistribution.
-   */
+  /** Stores the current weight value when input receives focus. */
   onFocus(formArray: FormArray, index: number): void {
     const weightControl = formArray.at(index).get(['weightFg', 'weight']);
     this.focusedWeightValue = weightControl?.value ?? 0;
   }
 
-  /**
-   * Called when a weight input loses focus.
-   * Triggers weight redistribution based on the change from the focused value.
-   */
+  /** Triggers weight redistribution when input loses focus. */
   onBlur(formArray: FormArray, index: number): void {
     const weightControl = formArray.at(index).get(['weightFg', 'weight']);
 
@@ -295,10 +279,7 @@ export class MedicationHelperService {
     this.focusedWeightValue = null;
   }
 
-  /**
-   * Calculate and redistribute weights proportionally when one weight changes.
-   * Uses the getAdjustedWeights algorithm from WeightingHelperService.
-   */
+  /** Calculates and redistributes weights proportionally using WeightingHelperService. */
   private calculateWeights(formArray: FormArray, changedIndex: number): void {
     if (this.isUpdating) return;
 
@@ -390,11 +371,7 @@ export class MedicationHelperService {
     this.isUpdating = false;
   }
 
-  /**
-   * Initialize weight for a newly added medication set.
-   * First set gets 100%, all subsequent sets get 0%.
-   * Does not modify existing weights.
-   */
+  /** Initializes weight for newly added medication set (first=100%, others=0%). */
   private initWeights(formArray: FormArray): void {
     this.isUpdating = true;
 
@@ -413,12 +390,7 @@ export class MedicationHelperService {
     this.isUpdating = false;
   }
 
-  /**
-   * Update weight control states based on form array length.
-   * - Single set: Disable weight control and set to 100%
-   * - Multiple sets: Enable controls (respecting locks)
-   * @param formArray - The FormArray containing all medication sets
-   */
+  /** Updates weight control states based on array length (single=disabled, multiple=enabled). */
   updateWeightControlStates(formArray: FormArray): void {
     const count = formArray.length;
 

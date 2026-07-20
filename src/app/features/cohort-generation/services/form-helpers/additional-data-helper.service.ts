@@ -1,23 +1,29 @@
 import {computed, inject, Injectable} from '@angular/core';
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 import {ConceptHelperService} from './concept-helper.service';
-import {SYSTEM_LIST, TIME_PERIOD_UNIT_LIST} from '../../../../constants/app-constants';
+import {SYSTEM_LIST} from '../../../../constants/app-constants';
 import {WeightingHelperService} from './weighting-helper.service';
+import {OnsetTimeRangeHelperService} from './onset-time-range-helper.service';
 import {CohortService} from '../cohort.service';
 import {
   PresetLabObservationValue,
   PresetLabObservationValuesService
 } from '../preset-lab-observation-values.service';
-import {debounceTime, distinctUntilChanged, of, tap} from 'rxjs';
+import {catchError, debounceTime, distinctUntilChanged, of, tap} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+/**
+ * Helper service for managing additional clinical data forms (event sets).
+ * Handles creation and management of lab observations, procedures, and radiology reports
+ * within time-based event sets.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class AdditionalDataHelperService {
   private fb = inject(FormBuilder);
   private conceptHelperService = inject(ConceptHelperService);
-  readonly TIME_PERIOD_UNIT_LIST = TIME_PERIOD_UNIT_LIST;
+  private onsetTimeRangeHelperService = inject(OnsetTimeRangeHelperService);
   readonly SYSTEM_LIST = SYSTEM_LIST;
   private presetLabObservationValuesService = inject(PresetLabObservationValuesService);
 
@@ -30,6 +36,7 @@ export class AdditionalDataHelperService {
 
   readonly valueTypes = [{display: "Quantity", value: "quantity"}, {display: "String", value: "string"}]
 
+  /** Adds a new event set to the form array. */
   addEvent(fgArray: FormArray) {
     const eventFg = this.buildEventFg();
     fgArray.push(eventFg);
@@ -60,9 +67,7 @@ export class AdditionalDataHelperService {
 
   }
 
-  /**
-   * Custom validator to ensure event set has at least one clinical data item
-   */
+  /** Validates that event set contains at least one clinical data item (lab/procedure/radiology). */
   private eventSetContentValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const fg = control as FormGroup;
@@ -79,8 +84,8 @@ export class AdditionalDataHelperService {
     };
   }
 
-  private buildEventFg() {
-    const eventSetTimingFg = this.buildEventSetTimingFg();
+  private buildEventFg(importedValue?: any) {
+    const eventSetTimingFg = this.buildEventSetTimingFg(importedValue?.eventSetTiming);
     const diagnosticPanelFg = this.buildDiagnosticPanel();
     return this.fb.group({
         eventSetTiming: eventSetTimingFg,
@@ -93,6 +98,7 @@ export class AdditionalDataHelperService {
     );
   }
 
+  /** Adds a lab observation to the event set with preset value support. */
   addObservation(additionalDataFg: FormGroup, importedFormValue?: any) {
     const defaultSystemStr = this.additionalEntities()!.find(value=> value.entityId == 'labResult')?.defaultSystem;
     const defaultSystem = SYSTEM_LIST.find(system => system.label === defaultSystemStr);
@@ -118,9 +124,7 @@ export class AdditionalDataHelperService {
     additionalDataFg.updateValueAndValidity();
   }
 
-  /**
-   * Creates a single lab observation FormGroup
-   */
+  /** Creates a lab observation FormGroup with concept, value, and preset controls. */
   private createLabObservationFg(defaultSystem: any, importedFormValue?: any): FormGroup {
     const labObservationFg = this.fb.group({
       value: this.getObservationValueFg(importedFormValue),
@@ -156,25 +160,34 @@ export class AdditionalDataHelperService {
           return this.presetLabObservationValuesService.getObservationValuePresets({
             code: code,
             system: system
-          });
+          }).pipe(
+            catchError((error) => {
+              // On error, return empty array to clear presets
+              console.error('Error fetching observation presets:', error);
+              return of([]);
+            })
+          );
         }
         return of([]);
       }),
-    ).subscribe(presets => {
+    ).subscribe({
+      next: (presets) => {
+        // Update THIS lab observation's availablePresets control ONLY
+        const availablePresetsCtrl = labObservationFg.get('availablePresets');
+        availablePresetsCtrl?.setValue(presets);
 
-      // Update THIS lab observation's availablePresets control ONLY
-      const availablePresetsCtrl = labObservationFg.get('availablePresets');
-      availablePresetsCtrl?.setValue(presets);
-
-      // Set loading state to false when search completes
-      labObservationFg.get('isLoadingPresets')?.setValue(false);
+        // Set loading state to false when search completes
+        labObservationFg.get('isLoadingPresets')?.setValue(false);
+      },
+      error: (error) => {
+        // Clear presets and reset loading state
+        labObservationFg.get('availablePresets')?.setValue([]);
+        labObservationFg.get('isLoadingPresets')?.setValue(false);
+      }
     });
   }
 
-  /**
-   * Handle when a user selects a preset from the dropdown
-   * This updates the quantity values (min, max, unit) in the value array
-   */
+  /** Applies selected preset values (min, max, unit) to the lab observation. */
   onPresetSelected(labObservationFg: FormGroup, selectedPreset: PresetLabObservationValue | null) {
     labObservationFg.get('selectedPreset')?.setValue(selectedPreset, { emitEvent: false });
     if (!selectedPreset) {
@@ -211,25 +224,42 @@ export class AdditionalDataHelperService {
     this.presetLabObservationValuesService.getObservationValuePresets({
       code: labResultConcept.code,
       system: labResultConcept.systemUri || labResultConcept.system
-    }).subscribe(presets => {
-      // Update the lab observation's available presets
-      labObservationFg.get('availablePresets')?.setValue(presets, { emitEvent: false });
+    }).pipe(
+      catchError((error) => {
+        console.error('Error fetching observation presets during import:', error);
+        // Return empty array on error
+        return of([]);
+      })
+    ).subscribe({
+      next: (presets) => {
+        // Update the lab observation's available presets
+        labObservationFg.get('availablePresets')?.setValue(presets, { emitEvent: false });
 
-      // Set loading state to false
-      labObservationFg.get('isLoadingPresets')?.setValue(false, { emitEvent: false });
+        // Set loading state to false
+        labObservationFg.get('isLoadingPresets')?.setValue(false, { emitEvent: false });
 
-      // Find and apply the specific preset
-      const preset = presets.find(p => p.presetName === selectedPreset?.presetName);
+        // Find and apply the specific preset
+        const preset = presets.find(p => p.presetName === selectedPreset?.presetName);
 
-      if (preset) {
-        // Store the selected preset
-        labObservationFg.get('selectedPreset')?.setValue(preset, { emitEvent: false });
-        // Apply the preset values
-        this.onPresetSelected(labObservationFg, preset);
+        if (preset) {
+          // Store the selected preset
+          labObservationFg.get('selectedPreset')?.setValue(preset, { emitEvent: false });
+          // Apply the preset values
+          this.onPresetSelected(labObservationFg, preset);
+        } else if (presets.length === 0) {
+          // If no presets were returned (likely due to error), log a warning
+          console.warn('No presets available for the selected concept');
+        }
+      },
+      error: (error) => {
+        // Clear presets and reset loading state
+        labObservationFg.get('availablePresets')?.setValue([], { emitEvent: false });
+        labObservationFg.get('isLoadingPresets')?.setValue(false, { emitEvent: false });
       }
     });
   }
 
+  /** Adds a procedure to the event set. */
   addProcedure(additionalDataFg: FormGroup<any>) {
     const defaultSystemStr = this.additionalEntities()!.find(value=> value.entityId == 'procedure')?.defaultSystem;
     const defaultSystem = SYSTEM_LIST.find(system => system.label === defaultSystemStr);
@@ -251,6 +281,7 @@ export class AdditionalDataHelperService {
     additionalDataFg.updateValueAndValidity();
   }
 
+  /** Adds a radiology report to the event set. */
   addRadiologyReport(additionalDataFg: FormGroup<any>) {
     const defaultSystemStr = this.additionalEntities()!.find(value=> value.entityId == 'radiology')?.defaultSystem;
     const defaultSystem = SYSTEM_LIST.find(system => system.label === defaultSystemStr);
@@ -272,9 +303,10 @@ export class AdditionalDataHelperService {
     additionalDataFg.updateValueAndValidity();
   }
 
+  /** Imports event sets with all clinical data from saved/exported data. */
   importAdditionalData(formArray: FormArray, importData: any[]) {
     importData.forEach(value => {
-      const eventFg = this.buildEventFg();
+      const eventFg = this.buildEventFg(value);
 
       if(value.diagnosticPanel.includeDiagnosticReport){
         const diagnosticReportFg  = eventFg.get('diagnosticPanel') as FormGroup;
@@ -298,7 +330,7 @@ export class AdditionalDataHelperService {
         });
       }
 
-
+      // Patch remaining values (eventSetTiming is already set during form creation)
       eventFg.patchValue(value, { emitEvent: false });
       formArray.push(eventFg);
 
@@ -323,12 +355,7 @@ export class AdditionalDataHelperService {
     });
   }
 
-  /**
-   * Used to delete Procedures and Observations only and not whole events
-   * @param index
-   * @param additionalDataFg
-   * @param name - "procedure" or "labObservation"
-   */
+  /** Deletes a single clinical data item (procedure/observation) from the event set. */
   deleteEventData(index: number, additionalDataFg: FormGroup<any>, name: string) {
     const fgArray = additionalDataFg.get(name) as FormArray;
     if(fgArray?.length == 1){ //if the fg array has only one element, remove the whole fg array
@@ -339,20 +366,8 @@ export class AdditionalDataHelperService {
     }
   }
 
-  private buildEventSetTimingFg() {
-    let fg =  new FormGroup({
-      onsetPlus: this.fb.group({
-        value: new FormControl(0),
-        unit: new FormControl(this.TIME_PERIOD_UNIT_LIST[0].value),
-      }),
-      repeat: new FormControl(false),
-      every: this.fb.group({
-        value: new FormControl({value: 0, disabled: true}),
-        unit: new FormControl({value:this.TIME_PERIOD_UNIT_LIST[2].value, disabled: true}),
-      })
-    });
-    this.subscribeToValueChange(fg)
-    return fg;
+  private buildEventSetTimingFg(importedValue?: any) {
+    return this.onsetTimeRangeHelperService.buildEventSetTimingFg(importedValue);
   }
 
   private getObservationValueFg(importedData?: any) : FormGroup<any> {
@@ -380,6 +395,7 @@ export class AdditionalDataHelperService {
     return fg;
   }
 
+  /** Adds a value FormGroup (string or quantity) to the observation value array. */
   addValueFg(valueArray: FormArray, valueType: string){
     if(valueType == 'string'){
       const fg = new FormGroup({
@@ -425,20 +441,4 @@ export class AdditionalDataHelperService {
     }
   }
 
-  private subscribeToValueChange(fg: FormGroup) {
-    fg.valueChanges.subscribe((value) => {
-      const everyValueCtrl = fg.get(['every', 'value']);
-      const everyUnitCtrl  = fg.get(['every', 'unit']);
-
-      if (value?.repeat === true) {
-        everyValueCtrl?.enable({ emitEvent: false });
-        everyUnitCtrl?.enable({ emitEvent: false });
-      } else {
-        everyValueCtrl?.setValue(0, { emitEvent: false });
-        everyUnitCtrl?.setValue(this.TIME_PERIOD_UNIT_LIST[2].value, { emitEvent: false });
-        everyValueCtrl?.disable({ emitEvent: false });
-        everyUnitCtrl?.disable({ emitEvent: false });
-      }
-    });
-  }
 }

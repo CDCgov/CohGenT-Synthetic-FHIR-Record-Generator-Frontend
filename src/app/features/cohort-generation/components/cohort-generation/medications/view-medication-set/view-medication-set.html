@@ -43,7 +43,7 @@
                    (keyup.enter)="calculateWeights()">
             <mat-icon matSuffix>percent</mat-icon>
           </mat-form-field>
-          @if (medicationSetsFormArray()?.length > 1) {
+          @if (medicationSetsFormArray()?.length > 2) {
             @if (medicationSetFg().get(['weightFg', 'lock'])?.value) {
               <mat-icon class="lock-icon" (click)="toggleLock()"
                         [matTooltip]="'Unlock weight'"

@@ -1,3 +1,7 @@
+/**
+ * Component for displaying detailed review of custom items with visual chart representation.
+ * Renders weighting and tribal affiliation data as stacked bar charts using Chart.js.
+ */
 import {
   Component,
   input,
@@ -7,7 +11,7 @@ import {
   untracked,
   OnDestroy
 } from '@angular/core';
-import { PercentPipe } from "@angular/common";
+import { PercentPipe} from "@angular/common";
 import { Chart, registerables } from 'chart.js';
 import {SummaryValueFormatPipe} from '../../../../pipes/summary-value-format-pipe';
 import {SummaryOption} from '../defaults-summary';
@@ -21,18 +25,25 @@ Chart.register(...registerables);
   imports: [
     PercentPipe,
     SummaryValueFormatPipe,
-    SystemStrPipe
+    SystemStrPipe,
   ],
   templateUrl: './custom-item-review.component.html',
   styleUrl: '../defaults-summary.scss',
 })
 export class CustomItemReview implements OnDestroy {
+  /** The summary option containing data to visualize */
   option = input.required<SummaryOption>();
+
+  /** Whether to render the chart in compact mode with smaller dimensions */
   compact = input<boolean>(false);
+
+  /** Reference to the canvas element for rendering the chart */
   chartCanvas = viewChild<ElementRef<HTMLCanvasElement>>('chartCanvas');
 
+  /** The Chart.js instance for rendering the visualization */
   private chart: Chart | null = null;
 
+  /** Constructor that sets up reactive effects for chart rendering */
   constructor() {
     effect(() => {
       const opt = this.option();
@@ -47,6 +58,7 @@ export class CustomItemReview implements OnDestroy {
     });
   }
 
+  /** Cleanup method that destroys the chart instance when component is destroyed */
   ngOnDestroy() {
     if (this.chart) {
       this.chart.destroy();
@@ -54,6 +66,7 @@ export class CustomItemReview implements OnDestroy {
     }
   }
 
+  /** Initializes and renders the Chart.js bar chart with the provided data */
   private initChart(opt: SummaryOption, canvas: HTMLCanvasElement, isCompact: boolean) {
     if (this.chart) {
       this.chart.destroy();
@@ -139,6 +152,7 @@ export class CustomItemReview implements OnDestroy {
     });
   }
 
+  /** Retrieves theme color from CSS custom properties for chart styling */
   getThemeColorFromCSS(index: number): string {
     const canvas = this.chartCanvas()?.nativeElement;
     if (!canvas) return '#000000';
